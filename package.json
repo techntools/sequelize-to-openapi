@@ -1,0 +1,93 @@
+{
+    "name": "@techntools/sequelize-to-openapi",
+    "version": "0.4.8",
+    "description": "OpenAPI 3 schemas from Sequelize models",
+    "publishConfig": {
+        "access": "public"
+    },
+    "main": "build/index.js",
+    "types": "build/index.d.ts",
+    "scripts": {
+        "clean": "rimraf coverage build",
+        "build": "tsc",
+        "compile": "tsc --watch",
+        "dev": "nodemon try-me.ts",
+        "dev:debug": "nodemon --exec 'node --inspect --require ts-node/register try-me.ts'",
+        "test": "jest --coverage",
+        "test:watch": "jest --watch",
+        "test:debug": "node --nolazy --inspect-brk node_modules/.bin/jest --runInBand --colors --verbose --watch --coverage false",
+        "release": "release-it",
+        "release-dr": "release-it --dry-run --release-version --changelog"
+    },
+    "files": [
+        "build"
+    ],
+    "keywords": [
+        "typescript",
+        "javascript",
+        "sequelize",
+        "json-schema",
+        "strategy-pattern",
+        "swagger",
+        "openapi",
+        "oas",
+        "oasv3"
+    ],
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/techntools/sequelize-to-openapi.git"
+    },
+    "author": {
+        "name": "Santosh Bandichode",
+        "url": "https://github.com/techntools/sequelize-to-openapi"
+    },
+    "bugs": "https://github.com/techntools/sequelize-to-openapi/issues",
+    "engines": {
+        "node": ">=18"
+    },
+    "devDependencies": {
+        "@apidevtools/swagger-parser": "^10.1.0",
+        "@release-it/conventional-changelog": "^8.0.1",
+        "@types/jest": "^29.5.12",
+        "ajv-formats": "^3.0.1",
+        "ajv-keywords": "^5.1.0",
+        "jest": "^29.7.0",
+        "mysql2": "^3.10.1",
+        "release-it": "^17.4.0",
+        "rimraf": "^5.0.7",
+        "sequelize": "^6.37.3",
+        "ts-jest": "^29.1.5",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.5.2"
+    },
+    "jest": {
+        "preset": "ts-jest",
+        "testEnvironment": "node",
+        "coverageReporters": [
+            "lcov",
+            "text",
+            "html"
+        ],
+        "collectCoverageFrom": [
+            "src/**/*"
+        ]
+    },
+    "release-it": {
+        "git": {
+            "commit": true,
+            "commitMessage": "Chore: Release ${version}",
+            "requireUpstream": false
+        },
+        "github": {
+            "release": true
+        },
+        "hooks": {
+            "before:init": [
+                "npm run clean",
+                "npm run build",
+                "npm run test"
+            ]
+        }
+    }
+}
