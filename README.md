@@ -28,6 +28,12 @@ oapi.schema('User', schemaManager.generate(UserModel, strategy))
 
 ## Configuration Options
 
+Starting from 1.0.0, additional properties can be rejected
+
+```typescript
+const strategy = new OpenApiStrategy({ additionalProperties: false })
+```
+
 Pass (per) model options to the generate() method:
 
 ```typescript
@@ -43,6 +49,8 @@ const userSchema = schemaManager.generate(userModel, strategy, {
 `title` and `description` are dropped
 
 `jsonSchema` and `schema` works the same as sequelize-to-json-schemas
+
+Starting from 1.0.0, associations are excluded by default
 
 ## Unsupported Types
 

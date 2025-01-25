@@ -10,7 +10,8 @@ import { pick, omit } from './utils/util'
 export type ModelContainer = {
     type: string,
     properties?: {}
-    required?: string[]
+    required?: string[],
+    additionalProperties: boolean
 }
 
 export type ModelOptions = {
@@ -39,7 +40,7 @@ export default class SchemaManager {
                 {
                     include: [],
                     exclude: [],
-                    associations: true,
+                    associations: false,
                     includeAssociations: [],
                     excludeAssociations: [],
                 },
@@ -137,7 +138,8 @@ export default class SchemaManager {
         const result: ModelContainer = {
             // identical for all models and schemas thus no need to over-engineer
             type: 'object',
-            properties: {}
+            properties: {},
+            additionalProperties: _strategy.get(this).additionalProperties
         }
 
         return result

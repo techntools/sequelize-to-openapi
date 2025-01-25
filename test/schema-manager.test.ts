@@ -49,10 +49,10 @@ describe('SchemaManager', function() {
     // ------------------------------------------------------------------------
     // make sure option 'associations' functions as expected
     // ------------------------------------------------------------------------
-    describe(`Ensure option 'associations' with default value 'true':`, function () {
+    describe(`Ensure option 'associations' with user-specificed value 'true':`, function () {
         const schemaManager = new SchemaManager
         const strategy = new OpenApiStrategy
-        const schema = schemaManager.generate(models.User, strategy)
+        const schema = schemaManager.generate(models.User, strategy, { associations: true })
 
         it(`generates association property 'profile'`, function () {
             expect(schema.properties).toHaveProperty('profile')
@@ -63,12 +63,10 @@ describe('SchemaManager', function() {
         })
     })
 
-    describe(`Ensure option 'associations' with user-specificed value 'false':`, function () {
+    describe(`Ensure option 'associations' with default value 'false':`, function () {
         const schemaManager = new SchemaManager
         const strategy = new OpenApiStrategy
-        const schema = schemaManager.generate(models.User, strategy, {
-            associations: false,
-        })
+        const schema = schemaManager.generate(models.User, strategy)
 
         it(`does not generate association property 'profile'`, function () {
             expect(schema.properties!['profile']).toBeUndefined()
@@ -88,6 +86,7 @@ describe('SchemaManager', function() {
         const strategy = new OpenApiStrategy
         const schema = schemaManager.generate(models.User, strategy, {
             includeAssociations: ['profile'],
+            associations: true
         });
 
         it(`include association 'profile'`, function () {
@@ -107,6 +106,7 @@ describe('SchemaManager', function() {
         const strategy = new OpenApiStrategy
         const schema = schemaManager.generate(models.User, strategy, {
             excludeAssociations: ['profile'],
+            associations: true
         });
 
         it(`do not include association 'profile'`, function () {

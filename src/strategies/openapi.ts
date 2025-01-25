@@ -2,6 +2,12 @@ import { Association, ModelValidateOptions } from 'sequelize'
 
 
 export default class OpenApiStrategy {
+    public additionalProperties: boolean
+
+    constructor(options: { additionalProperties?: boolean } = {}) {
+        this.additionalProperties = options.additionalProperties || false
+    }
+
     getPropertyExamples(examples: any[]) {
         return {
             example: examples

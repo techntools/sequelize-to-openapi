@@ -21,8 +21,8 @@ describe('OpenApi3Strategy', function () {
         // generate schema
         // ------------------------------------------------------------------------
         const schemaManager = new SchemaManager
-        const strategy = new OpenApiStrategy
-        const schema = schemaManager.generate(models.User, strategy)
+        const strategy = new OpenApiStrategy({ additionalProperties: true })
+        const schema = schemaManager.generate(models.User, strategy, { associations: true })
 
         // validate document using ajv
         const ajv = new Ajv()
@@ -628,6 +628,10 @@ describe('OpenApi3Strategy', function () {
                     }
                 })
             })
+        })
+
+        describe("Ensure OpenApiStrategy allows 'additionalProperties'", function () {
+            expect(schema.additionalProperties).toEqual(true)
         })
     })
 })
