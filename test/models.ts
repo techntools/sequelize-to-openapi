@@ -484,6 +484,28 @@ const User = (function () {
         }
     }
 
+    if (supportedDataType('RANGE')) {
+        attributes = {
+            ...attributes,
+
+            RANGE_INTEGER: {
+                type: DataTypes.RANGE(DataTypes.INTEGER)
+            },
+            RANGE_DECIMAL: {
+                type: DataTypes.RANGE(DataTypes.DECIMAL)
+            },
+            RANGE_BIGINT: {
+                type: DataTypes.RANGE(DataTypes.BIGINT)
+            },
+            RANGE_DATE: {
+                type: DataTypes.RANGE(DataTypes.DATE)
+            },
+            RANGE_DATEONLY: {
+                type: DataTypes.RANGE(DataTypes.DATEONLY)
+            },
+        }
+    }
+
     const Model = sequelize.define(
         'user',
         {

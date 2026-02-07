@@ -41,6 +41,12 @@ console.log('OpenAPI Schema', JSON.stringify(schemaWrapper, null, 4))
         delete user.properties.STRING_NOT_ARGED_REGEXP
         delete user.properties.STRING_NOT_ARRAY
 
+        delete user.properties.RANGE_INTEGER
+        delete user.properties.RANGE_DECIMAL
+        delete user.properties.RANGE_BIGINT
+        delete user.properties.RANGE_DATE
+        delete user.properties.RANGE_DATEONLY
+
         const api = await SwaggerParser.validate(Object.assign({}, wrapper))
         console.log('Wrapper passed OpenAPI validation: API name: %s, Version: %s', api.info.title, api.info.version)
     } catch(err) {

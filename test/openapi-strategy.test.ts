@@ -7,7 +7,7 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import addKeywords from 'ajv-keywords'
 
-const SwaggerParser = require('@apidevtools/swagger-parser')
+import SwaggerParser from '@apidevtools/swagger-parser'
 
 import models from './models'
 import SchemaManager from '../src/schema-manager'

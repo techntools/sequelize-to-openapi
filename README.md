@@ -55,7 +55,6 @@ Starting from 1.0.0, associations are excluded by default
 ## Unsupported Types
 
 * GEOMETRY
-* RANGE
 * ABSTRACT
 * GEOGRAPHY
 * HSTORE
@@ -110,6 +109,61 @@ Following validators are supported:
 Flags such as i, g etc. are not supported in OpenAPI. Sequelize can use string or RegExp class for regex. So, to avoid these limitations, I have used `regexp` keyword from [ajv-keywords](https://github.com/ajv-validator/ajv-keywords) package for `is` and `not` validators.
 
 This makes generated OpenAPI schema not fully compliant with the standard. But you can drop those validators if you face issues.
+
+## Range Data Type
+
+Postgres RANGE data type is supported for INTEGER, DECIMAL, BIGINT, DATE, and DATEONLY. Modify the schema as you see fit:
+
+```json
+{
+    "uniqueItems": true,
+    "minItems": 2,
+    "maxItems": 2,
+    "items": {
+        "type": "integer"
+    },
+    "range": true
+}
+
+{
+    "uniqueItems": true,
+    "minItems": 2,
+    "maxItems": 2,
+    "items": {
+        "type": "string",
+        "format": "date"
+    },
+    "daterange": true
+}
+```
+
+Custom ajv keywords `range` and `daterange` are optional and are used to check `start < end`.
+
+```typescript
+ajv.addKeyword({
+    keyword: 'daterange',
+    type: 'array',
+    validate(_: JSONType, data: JSONType) {
+        const start = new Date(data[0])
+        const end = new Date(data[1])
+
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()))
+            return true  // Handle format errors elsewhere
+
+        return start < end
+    },
+    errors: true
+})
+
+ajv.addKeyword({
+    keyword: 'range',
+    type: 'array',
+    validate(_: JSONType, data: JSONType) {
+        return data[0] < data[1]
+    },
+    errors: true
+})
+```
 
 ## Demo
 

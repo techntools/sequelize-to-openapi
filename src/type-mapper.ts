@@ -213,6 +213,11 @@ export default class TypeMapper {
                 break
             }
 
+            case 'RANGE': {
+                result = { ...ARRAY }
+                break
+            }
+
             default:
                 // ----------------------------------------------------------------------
                 // use ANY for anything not matching

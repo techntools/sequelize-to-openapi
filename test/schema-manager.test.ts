@@ -26,7 +26,7 @@ describe('SchemaManager', function() {
         describe('Ensure attribute inclusions:', function () {
             const schemaManager = new SchemaManager
             const strategy = new OpenApiStrategy
-            debugger
+
             const schema = schemaManager.generate(models.User, strategy, {
                 include: ['STRING', 'STRING_1234'],
                 associations: false
