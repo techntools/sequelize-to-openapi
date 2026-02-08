@@ -29,6 +29,9 @@ describe('postgres range type OpenAPI schema', function () {
         keyword: 'daterange',
         type: 'array',
         validate(_: JSONType, data: JSONType) {
+            if (data[0] === null || data[1] === null)
+                return true
+
             const start = new Date(data[0])
             const end = new Date(data[1])
 
@@ -44,6 +47,9 @@ describe('postgres range type OpenAPI schema', function () {
         keyword: 'range',
         type: 'array',
         validate(_: JSONType, data: JSONType) {
+            if (data[0] === null || data[1] === null)
+                return true
+
             return data[0] < data[1]
         },
         errors: true
@@ -57,6 +63,11 @@ describe('postgres range type OpenAPI schema', function () {
 
         {
             const valid = validate([0, 1])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([null, 1])
             expect(valid).toBe(true)
         }
 
@@ -88,6 +99,11 @@ describe('postgres range type OpenAPI schema', function () {
         }
 
         {
+            const valid = validate([1, null])
+            expect(valid).toBe(true)
+        }
+
+        {
             const valid = validate([1])
             expect(valid).toBe(false)
         }
@@ -106,6 +122,11 @@ describe('postgres range type OpenAPI schema', function () {
 
         {
             const valid = validate(['18446744073709551616', '28446744073709551616'])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([null, '28446744073709551616'])
             expect(valid).toBe(true)
         }
 
@@ -134,6 +155,11 @@ describe('postgres range type OpenAPI schema', function () {
 
         {
             const valid = validate(['2025-05-01T00:01:00.000Z', '2026-05-01T00:00:00.000Z'])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate(['2025-05-01T00:01:00.000Z', null])
             expect(valid).toBe(true)
         }
 

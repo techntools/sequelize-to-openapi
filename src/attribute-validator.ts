@@ -48,12 +48,12 @@ export default class AttributeValidator {
                 }
 
                 if (properties.type['options'].subtype == 'INTEGER') {
-                    result['items'] = { type: 'integer' }
+                    result['items'] = { type: 'integer', nullable: true }
                     result['range'] = true
                 }
 
                 if (properties.type['options'].subtype == 'DECIMAL') {
-                    result['items'] = { type: 'number', format: 'double' }
+                    result['items'] = { type: 'number', nullable: true, format: 'double' }
                     result['range'] = true
                 }
 
@@ -65,18 +65,19 @@ export default class AttributeValidator {
                 if (properties.type['options'].subtype == 'BIGINT') {
                     result['items'] = {
                         type: 'string',
+                        nullable: true,
                         pattern: '^[0-9]+$'
                     }
                     result['range'] = true
                 }
 
                 if (properties.type['options'].subtype == 'DATETIME') {
-                    result['items'] = { type: 'string', format: 'date-time' }
+                    result['items'] = { type: 'string', nullable: true, format: 'date-time' }
                     result['daterange'] = true
                 }
 
                 if (properties.type['options'].subtype == 'DATE') {
-                    result['items'] = { type: 'string', format: 'date' }
+                    result['items'] = { type: 'string', nullable: true, format: 'date' }
                     result['daterange'] = true
                 }
             }

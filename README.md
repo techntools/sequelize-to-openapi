@@ -143,6 +143,9 @@ ajv.addKeyword({
     keyword: 'daterange',
     type: 'array',
     validate(_: JSONType, data: JSONType) {
+        if (data[0] === null || data[1] === null)
+            return true
+
         const start = new Date(data[0])
         const end = new Date(data[1])
 
@@ -158,6 +161,9 @@ ajv.addKeyword({
     keyword: 'range',
     type: 'array',
     validate(_: JSONType, data: JSONType) {
+        if (data[0] === null || data[1] === null)
+            return true
+
         return data[0] < data[1]
     },
     errors: true
