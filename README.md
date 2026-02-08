@@ -57,7 +57,6 @@ Starting from 1.0.0, associations are excluded by default
 * GEOMETRY
 * ABSTRACT
 * GEOGRAPHY
-* HSTORE
 
 While sequelize-to-json-schemas throws error for these, this package simply ignores them so that you can use generated schema for rest of the types and support these types the way you see fit
 
