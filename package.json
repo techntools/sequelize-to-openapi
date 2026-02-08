@@ -1,6 +1,6 @@
 {
     "name": "@techntools/sequelize-to-openapi",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "OpenAPI 3 schemas from Sequelize models",
     "publishConfig": {
         "access": "public"
