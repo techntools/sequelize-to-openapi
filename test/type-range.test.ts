@@ -53,26 +53,24 @@ describe('postgres range type OpenAPI schema', function () {
         expect(schema.properties).toHaveProperty('RANGE_INTEGER')
         expect(schema.properties!['RANGE_INTEGER']['items']['type']).toEqual('integer')
 
+        const validate = ajv.compile(schema.properties!['RANGE_INTEGER'])
+
         {
-            const validate = ajv.compile(schema.properties!['RANGE_INTEGER'])
             const valid = validate([0, 1])
             expect(valid).toBe(true)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_INTEGER'])
             const valid = validate([])
             expect(valid).toBe(false)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_INTEGER'])
             const valid = validate([1])
             expect(valid).toBe(false)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_INTEGER'])
             const valid = validate([1, 0])
             expect(valid).toBe(false)
         }
@@ -82,20 +80,19 @@ describe('postgres range type OpenAPI schema', function () {
         expect(schema.properties).toHaveProperty('RANGE_DECIMAL')
         expect(schema.properties!['RANGE_DECIMAL']['items']['type']).toEqual('number')
 
+        const validate = ajv.compile(schema.properties!['RANGE_DECIMAL'])
+
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DECIMAL'])
             const valid = validate([1, 2.3])
             expect(valid).toBe(true)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DECIMAL'])
             const valid = validate([1])
             expect(valid).toBe(false)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DECIMAL'])
             const valid = validate([1.1, 0])
             expect(valid).toBe(false)
         }
@@ -105,26 +102,24 @@ describe('postgres range type OpenAPI schema', function () {
         expect(schema.properties).toHaveProperty('RANGE_BIGINT')
         expect(schema.properties!['RANGE_BIGINT']['items']['type']).toEqual('string')
 
+        const validate = ajv.compile(schema.properties!['RANGE_BIGINT'])
+
         {
-            const validate = ajv.compile(schema.properties!['RANGE_BIGINT'])
             const valid = validate(['18446744073709551616', '28446744073709551616'])
             expect(valid).toBe(true)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_BIGINT'])
             const valid = validate(['a', 'b'])
             expect(valid).toBe(false)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_BIGINT'])
             const valid = validate([1])
             expect(valid).toBe(false)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_BIGINT'])
             const valid = validate([1.1, 0])
             expect(valid).toBe(false)
         }
@@ -135,14 +130,14 @@ describe('postgres range type OpenAPI schema', function () {
         expect(schema.properties!['RANGE_DATE']['items']['type']).toEqual('string')
         expect(schema.properties!['RANGE_DATE']['items']['format']).toEqual('date-time')
 
+        const validate = ajv.compile(schema.properties!['RANGE_DATE'])
+
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DATE'])
             const valid = validate(['2025-05-01T00:01:00.000Z', '2026-05-01T00:00:00.000Z'])
             expect(valid).toBe(true)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DATE'])
             const valid = validate(['2026-05-01T00:00:00.000Z', '2025-05-01T00:00:00.000Z'])
             expect(valid).toBe(false)
         }
@@ -153,20 +148,19 @@ describe('postgres range type OpenAPI schema', function () {
         expect(schema.properties!['RANGE_DATEONLY']['items']['type']).toEqual('string')
         expect(schema.properties!['RANGE_DATEONLY']['items']['format']).toEqual('date')
 
+        const validate = ajv.compile(schema.properties!['RANGE_DATEONLY'])
+
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DATEONLY'])
             const valid = validate(['2025-05-01', '2026-05-01'])
             expect(valid).toBe(true)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DATEONLY'])
             const valid = validate(['2026-05-01T00:00:00.000Z', '2025-05-01T00:00:00.000Z'])
             expect(valid).toBe(false)
         }
 
         {
-            const validate = ajv.compile(schema.properties!['RANGE_DATEONLY'])
             const valid = validate(['2026-05-01', '2025-05-01'])
             expect(valid).toBe(false)
         }
