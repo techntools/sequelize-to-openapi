@@ -165,6 +165,27 @@ ajv.addKeyword({
 })
 ```
 
+## HSTORE Data Type
+
+Postgres HSTORE is supported with following schema:
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "HSTORE": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+                "type": "string",
+                "nullable": true
+            }
+        }
+    },
+    "additionalProperties": false
+}
+```
+
 ## Demo
 
 Check my [repo](https://github.com/techntools/sequelize-to-openapi-demo) for usage of the package. It uses sequelize-typescript.

@@ -29,6 +29,17 @@ export default class AttributeValidator {
                 result = strategy.getPropertiesForValidate(properties.validate)
                 break
 
+            case 'HSTORE': {
+                result = {
+                    additionalProperties: {
+                        type: 'string',
+                        nullable: true
+                    }
+                }
+
+                break
+            }
+
             case 'RANGE': {
                 result = {
                     uniqueItems: true,

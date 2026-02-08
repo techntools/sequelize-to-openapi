@@ -218,6 +218,11 @@ export default class TypeMapper {
                 break
             }
 
+            case 'HSTORE': {
+                result = { ...OBJECT }
+                break
+            }
+
             default:
                 // ----------------------------------------------------------------------
                 // use ANY for anything not matching

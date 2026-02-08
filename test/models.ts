@@ -506,6 +506,16 @@ const User = (function () {
         }
     }
 
+    if (supportedDataType('HSTORE')) {
+        attributes = {
+            ...attributes,
+
+            HSTORE: {
+                type: DataTypes.HSTORE
+            }
+        }
+    }
+
     const Model = sequelize.define(
         'user',
         {
