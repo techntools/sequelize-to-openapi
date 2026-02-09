@@ -42,18 +42,41 @@ export default class AttributeValidator {
 
             case 'RANGE': {
                 result = {
+                    items: {
+                        anyOf: [
+                            {
+                                type: 'object',
+                                properties: {
+                                    value: {},
+                                    inclusive: { type: 'boolean' }
+                                },
+                                required: ['value', 'inclusive'],
+                                additionalProperties: false
+                            }
+                        ]
+                    },
                     uniqueItems: true,
                     minItems: 2,
                     maxItems: 2,
                 }
 
+                const anyOf = result['items']['anyOf']
+                const objectValue = anyOf[0]['properties']['value']
+
                 if (properties.type['options'].subtype == 'INTEGER') {
-                    result['items'] = { type: 'integer', nullable: true }
+                    objectValue['type'] = 'integer'
+
+                    anyOf.push({ type: 'integer', nullable: true })
+
                     result['range'] = true
                 }
 
                 if (properties.type['options'].subtype == 'DECIMAL') {
-                    result['items'] = { type: 'number', nullable: true, format: 'double' }
+                    objectValue['type'] = 'number'
+                    objectValue['format'] = 'double'
+
+                    anyOf.push({ type: 'number', nullable: true, format: 'double' })
+
                     result['range'] = true
                 }
 
@@ -63,21 +86,33 @@ export default class AttributeValidator {
                  *  "integer" without a specified "format" should always lead to a BigInteger
                  */
                 if (properties.type['options'].subtype == 'BIGINT') {
-                    result['items'] = {
+                    objectValue['type'] = 'string'
+                    objectValue['pattern'] = '^[0-9]+$'
+
+                    anyOf.push({
                         type: 'string',
                         nullable: true,
                         pattern: '^[0-9]+$'
-                    }
+                    })
+
                     result['range'] = true
                 }
 
                 if (properties.type['options'].subtype == 'DATETIME') {
-                    result['items'] = { type: 'string', nullable: true, format: 'date-time' }
+                    objectValue['type'] = 'string'
+                    objectValue['format'] = 'date-time'
+
+                    anyOf.push({ type: 'string', nullable: true, format: 'date-time' })
+
                     result['daterange'] = true
                 }
 
                 if (properties.type['options'].subtype == 'DATE') {
-                    result['items'] = { type: 'string', nullable: true, format: 'date' }
+                    objectValue['type'] = 'string'
+                    objectValue['format'] = 'date'
+
+                    anyOf.push({ type: 'string', nullable: true, format: 'date' })
+
                     result['daterange'] = true
                 }
             }

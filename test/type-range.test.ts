@@ -32,13 +32,28 @@ describe('postgres range type OpenAPI schema', function () {
             if (data[0] === null || data[1] === null)
                 return true
 
-            const start = new Date(data[0])
-            const end = new Date(data[1])
+            let start: string | null = null
+            let end: string | null = null
 
-            if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()))
-                return true  // Handle format errors elsewhere
+            if (typeof data[0] === 'object')
+                start = data[0]!['value']
 
-            return start < end
+            if (typeof data[0] === 'string')
+                start = data[0]
+
+            if (typeof data[1] === 'object')
+                end = data[1]!['value']
+
+            if (typeof data[1] === 'string')
+                end = data[1]
+
+            if (start === null || end === null)
+                return true
+
+            const startDate = new Date(start)
+            const endDate = new Date(end)
+
+            return startDate < endDate
         },
         errors: true
     })
@@ -46,9 +61,27 @@ describe('postgres range type OpenAPI schema', function () {
     ajv.addKeyword({
         keyword: 'range',
         type: 'array',
-        validate(_: JSONType, data: JSONType) {
+        validate(_: JSONType, data: JSONType | JSONType[]) {
             if (data[0] === null || data[1] === null)
                 return true
+
+            let start: string | number | null = null
+            let end: string | number | null = null
+
+            if (typeof data[0] === 'object')
+                start = data[0]!['value']
+
+            if (typeof data[0] === 'string' || typeof data[0] === 'number')
+                start = data[0]
+
+            if (typeof data[1] === 'object')
+                end = data[1]!['value']
+
+            if (typeof data[1] === 'string' || typeof data[1] === 'number')
+                end = data[1]
+
+            if (start !== null && end !== null)
+                return start < end
 
             return data[0] < data[1]
         },
@@ -57,7 +90,7 @@ describe('postgres range type OpenAPI schema', function () {
 
     it(`should include integer range`, function () {
         expect(schema.properties).toHaveProperty('RANGE_INTEGER')
-        expect(schema.properties!['RANGE_INTEGER']['items']['type']).toEqual('integer')
+        expect(schema.properties!['RANGE_INTEGER']['items']['anyOf'][1]['type']).toEqual('integer')
 
         const validate = ajv.compile(schema.properties!['RANGE_INTEGER'])
 
@@ -85,11 +118,71 @@ describe('postgres range type OpenAPI schema', function () {
             const valid = validate([1, 0])
             expect(valid).toBe(false)
         }
+
+        {
+            const valid = validate([1.1, 2.2])
+            expect(valid).toBe(false)
+        }
+    })
+
+    it(`should include integer range as objects`, function () {
+        expect(schema.properties).toHaveProperty('RANGE_INTEGER')
+        expect(schema.properties!['RANGE_INTEGER']['items']['anyOf'][1]['type']).toEqual('integer')
+
+        const validate = ajv.compile(schema.properties!['RANGE_INTEGER'])
+
+        {
+            const valid = validate([
+                { value: 0, inclusive: true },
+                { value: 1, inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                0,
+                { value: 1, inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: 0, inclusive: false },
+                1,
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                null,
+                { value: 1, inclusive: false },
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: 1, inclusive: false },
+                null,
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: 0 },  // Missing flag
+                { value: 1, inclusive: false }
+            ])
+            expect(valid).toBe(false)
+        }
     })
 
     it(`should include decimal range`, function () {
         expect(schema.properties).toHaveProperty('RANGE_DECIMAL')
-        expect(schema.properties!['RANGE_DECIMAL']['items']['type']).toEqual('number')
+        expect(schema.properties!['RANGE_DECIMAL']['items']['anyOf'][1]['type']).toEqual('number')
 
         const validate = ajv.compile(schema.properties!['RANGE_DECIMAL'])
 
@@ -114,9 +207,64 @@ describe('postgres range type OpenAPI schema', function () {
         }
     })
 
+    it(`should include decimal range as objects`, function () {
+        expect(schema.properties).toHaveProperty('RANGE_DECIMAL')
+        expect(schema.properties!['RANGE_DECIMAL']['items']['anyOf'][1]['type']).toEqual('number')
+
+        const validate = ajv.compile(schema.properties!['RANGE_DECIMAL'])
+
+        {
+            const valid = validate([
+                { value: 0.0, inclusive: true },
+                { value: 1.0, inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                1.11,
+                { value: 1.2, inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: 0.11, inclusive: false },
+                0.23,
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                null,
+                { value: 0.2, inclusive: false },
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: 23.01, inclusive: false },
+                null,
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: 22.11 },  // Missing flag
+                { value: 45, inclusive: false }
+            ])
+            expect(valid).toBe(false)
+        }
+    })
+
     it(`should include big integer range`, function () {
         expect(schema.properties).toHaveProperty('RANGE_BIGINT')
-        expect(schema.properties!['RANGE_BIGINT']['items']['type']).toEqual('string')
+        expect(schema.properties!['RANGE_BIGINT']['items']['anyOf'][1]['type']).toEqual('string')
 
         const validate = ajv.compile(schema.properties!['RANGE_BIGINT'])
 
@@ -146,10 +294,65 @@ describe('postgres range type OpenAPI schema', function () {
         }
     })
 
+    it(`should include big integer range as objects`, function () {
+        expect(schema.properties).toHaveProperty('RANGE_BIGINT')
+        expect(schema.properties!['RANGE_BIGINT']['items']['anyOf'][1]['type']).toEqual('string')
+
+        const validate = ajv.compile(schema.properties!['RANGE_BIGINT'])
+
+        {
+            const valid = validate([
+                { value: '0', inclusive: true },
+                { value: '1', inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                '0',
+                { value: '1', inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '0', inclusive: false },
+                '1',
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                null,
+                { value: '1', inclusive: false },
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '1', inclusive: false },
+                null,
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '0' },  // Missing flag
+                { value: '1', inclusive: false }
+            ])
+            expect(valid).toBe(false)
+        }
+    })
+
     it(`should include date time range`, function () {
         expect(schema.properties).toHaveProperty('RANGE_DATE')
-        expect(schema.properties!['RANGE_DATE']['items']['type']).toEqual('string')
-        expect(schema.properties!['RANGE_DATE']['items']['format']).toEqual('date-time')
+        expect(schema.properties!['RANGE_DATE']['items']['anyOf'][1]['type']).toEqual('string')
+        expect(schema.properties!['RANGE_DATE']['items']['anyOf'][1]['format']).toEqual('date-time')
 
         const validate = ajv.compile(schema.properties!['RANGE_DATE'])
 
@@ -169,10 +372,74 @@ describe('postgres range type OpenAPI schema', function () {
         }
     })
 
+    it(`should include date time range as objects`, function () {
+        expect(schema.properties).toHaveProperty('RANGE_DATE')
+        expect(schema.properties!['RANGE_DATE']['items']['anyOf'][1]['type']).toEqual('string')
+        expect(schema.properties!['RANGE_DATE']['items']['anyOf'][1]['format']).toEqual('date-time')
+
+        const validate = ajv.compile(schema.properties!['RANGE_DATE'])
+
+        {
+            const valid = validate([
+                { value: '2025-05-01T00:01:00.000Z', inclusive: true },
+                { value: '2026-05-01T00:00:00.000Z', inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                '2025-05-01T00:01:00.000Z',
+                { value: '2026-05-01T00:00:00.000Z', inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '2025-05-01T00:01:00.000Z', inclusive: false },
+                '2026-05-01T00:00:00.000Z',
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                null,
+                { value: '2026-05-01T00:00:00.000Z', inclusive: false },
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '2026-05-01T00:00:00.000Z', inclusive: false },
+                null,
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '2026-05-01T00:00:00.000Z', inclusive: true },
+                { value: '2025-05-01T00:01:00.000Z', inclusive: false }
+            ])
+            expect(valid).toBe(false)
+        }
+
+        {
+            const valid = validate([
+                { value: '2025-05-01T00:01:00.000Z' },  // Missing flag
+                { value: '2026-05-01T00:00:00.000Z', inclusive: false }
+            ])
+            expect(valid).toBe(false)
+        }
+    })
+
     it(`should include date range`, function () {
         expect(schema.properties).toHaveProperty('RANGE_DATEONLY')
-        expect(schema.properties!['RANGE_DATEONLY']['items']['type']).toEqual('string')
-        expect(schema.properties!['RANGE_DATEONLY']['items']['format']).toEqual('date')
+        expect(schema.properties!['RANGE_DATEONLY']['items']['anyOf'][1]['type']).toEqual('string')
+        expect(schema.properties!['RANGE_DATEONLY']['items']['anyOf'][1]['format']).toEqual('date')
 
         const validate = ajv.compile(schema.properties!['RANGE_DATEONLY'])
 
@@ -188,6 +455,70 @@ describe('postgres range type OpenAPI schema', function () {
 
         {
             const valid = validate(['2026-05-01', '2025-05-01'])
+            expect(valid).toBe(false)
+        }
+    })
+
+    it(`should include date range as objects`, function () {
+        expect(schema.properties).toHaveProperty('RANGE_DATEONLY')
+        expect(schema.properties!['RANGE_DATEONLY']['items']['anyOf'][1]['type']).toEqual('string')
+        expect(schema.properties!['RANGE_DATEONLY']['items']['anyOf'][1]['format']).toEqual('date')
+
+        const validate = ajv.compile(schema.properties!['RANGE_DATEONLY'])
+
+        {
+            const valid = validate([
+                { value: '2025-05-01', inclusive: true },
+                { value: '2026-05-01', inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                '2025-05-01',
+                { value: '2026-05-01', inclusive: false }
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '2025-05-01', inclusive: false },
+                '2026-05-01',
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                null,
+                { value: '2026-05-01', inclusive: false },
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '2026-05-01', inclusive: false },
+                null,
+            ])
+            expect(valid).toBe(true)
+        }
+
+        {
+            const valid = validate([
+                { value: '2026-05-01', inclusive: true },
+                { value: '2025-05-01', inclusive: false }
+            ])
+            expect(valid).toBe(false)
+        }
+
+        {
+            const valid = validate([
+                { value: '2025-05-01' },  // Missing flag
+                { value: '2026-05-01', inclusive: false }
+            ])
             expect(valid).toBe(false)
         }
     })

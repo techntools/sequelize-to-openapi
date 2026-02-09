@@ -115,24 +115,67 @@ Postgres RANGE data type is supported for INTEGER, DECIMAL, BIGINT, DATE, and DA
 
 ```json
 {
+    "items": {
+        "anyOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "inclusive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "value",
+                    "inclusive"
+                ],
+                "additionalProperties": false
+            },
+            {
+                "type": "string",
+                "nullable": true,
+                "format": "date"
+            }
+        ]
+    },
     "uniqueItems": true,
     "minItems": 2,
     "maxItems": 2,
-    "items": {
-        "type": "integer"
-    },
-    "range": true
+    "daterange": true
 }
 
 {
+    "items": {
+        "anyOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "value": {
+                        "type": "integer"
+                    },
+                    "inclusive": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "value",
+                    "inclusive"
+                ],
+                "additionalProperties": false
+            },
+            {
+                "type": "integer",
+                "nullable": true
+            }
+        ]
+    },
     "uniqueItems": true,
     "minItems": 2,
     "maxItems": 2,
-    "items": {
-        "type": "string",
-        "format": "date"
-    },
-    "daterange": true
+    "range": true
 }
 ```
 
@@ -146,13 +189,28 @@ ajv.addKeyword({
         if (data[0] === null || data[1] === null)
             return true
 
-        const start = new Date(data[0])
-        const end = new Date(data[1])
+        let start: string | null = null
+        let end: string | null = null
 
-        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()))
-            return true  // Handle format errors elsewhere
+        if (typeof data[0] === 'object')
+            start = data[0]!['value']
 
-        return start < end
+        if (typeof data[0] === 'string')
+            start = data[0]
+
+        if (typeof data[1] === 'object')
+            end = data[1]!['value']
+
+        if (typeof data[1] === 'string')
+            end = data[1]
+
+        if (start === null || end === null)
+            return true
+
+        const startDate = new Date(start)
+        const endDate = new Date(end)
+
+        return startDate < endDate
     },
     errors: true
 })
@@ -160,9 +218,27 @@ ajv.addKeyword({
 ajv.addKeyword({
     keyword: 'range',
     type: 'array',
-    validate(_: JSONType, data: JSONType) {
+    validate(_: JSONType, data: JSONType | JSONType[]) {
         if (data[0] === null || data[1] === null)
             return true
+
+        let start: string | number | null = null
+        let end: string | number | null = null
+
+        if (typeof data[0] === 'object')
+            start = data[0]!['value']
+
+        if (typeof data[0] === 'string' || typeof data[0] === 'number')
+            start = data[0]
+
+        if (typeof data[1] === 'object')
+            end = data[1]!['value']
+
+        if (typeof data[1] === 'string' || typeof data[1] === 'number')
+            end = data[1]
+
+        if (start !== null && end !== null)
+            return start < end
 
         return data[0] < data[1]
     },
