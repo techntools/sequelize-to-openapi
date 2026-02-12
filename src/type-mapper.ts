@@ -15,7 +15,9 @@ const ANY = { anyOf: [OBJECT, ARRAY, BOOLEAN, INTEGER, NUMBER, STRING] }
 type PropertyType = (typeof OBJECT | typeof ARRAY | typeof BOOLEAN | typeof INTEGER | typeof NUMBER | typeof STRING | typeof ANY) & {
     maxLength?: number,
     format?: string,
-    enum?: (string | number)[]
+    enum?: (string | number)[],
+    properties?: Record<string, Record<string, number | string | Record<string, any>>>,
+    required?: string[]
 }
 
 type Property = (PropertyType | { type: PropertyType[], items?: PropertyType[] }) & { default?: unknown }
@@ -220,6 +222,141 @@ export default class TypeMapper {
 
             case 'HSTORE': {
                 result = { ...OBJECT }
+                break
+            }
+
+            /*
+             * https://sequelize.org/api/v6/class/src/data-types.js~geometry
+             * https://sequelize.org/api/v6/class/src/data-types.js~geography
+             */
+            case 'GEOMETRY':
+            case 'GEOGRAPHY': {
+                const minMaxCoordinates = {
+                    minItems: 2,
+                    maxItems: 3  // With elevation/altitude (Z coordinate)
+                }
+
+                const crsSchema = {
+                    type: 'object',
+                    properties: {
+                        type: {
+                            type: 'string',
+                            minLength: 1
+                        },
+                        properties: {
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                    minLength: 1
+                                }
+                            },
+                            required: ['name']
+                        }
+                    },
+                    required: ['type', 'properties']
+                }
+
+                const pointCoordinatesSchema = {
+                    type: 'array',
+                    items: {
+                        type: 'number',
+                    },
+                    ...minMaxCoordinates
+                }
+
+                const linestringCoordinatesSchema = {
+                    type: 'array',
+                    items: {
+                        type: 'array',
+                        items: {
+                            type: 'number',
+                        },
+                        ...minMaxCoordinates
+                    },
+                    minItems: 2
+                }
+
+                const polygonCoordinatesSchema = {
+                    type: 'array',
+                    items: {
+                        type: 'array',
+                        items: {
+                            type: 'array',
+                            items: {
+                                type: 'number',
+                            },
+                            ...minMaxCoordinates
+                        },
+                        minItems: 4  // Needs at least 4 points (first and last points are identical).
+                    }
+                }
+
+                const required = [
+                    'type',  // GeoJSON requires type
+                    'coordinates'
+                ]
+
+                if (properties.type['options'].type === 'POLYGON') {
+                    result = {
+                        ...OBJECT,
+                        properties: {
+                            type: {
+                                type: 'string',
+                                enum: ['POLYGON']
+                            },
+                            coordinates: polygonCoordinatesSchema,
+                            crs: crsSchema
+                        },
+                        required
+                    }
+                } else if (properties.type['options'].type === 'LINESTRING') {
+                    result = {
+                        ...OBJECT,
+                        properties: {
+                            type: {
+                                type: 'string',
+                                enum: ['LINESTRING']
+                            },
+                            coordinates: linestringCoordinatesSchema,
+                            crs: crsSchema
+                        },
+                        required
+                    }
+                } else if (properties.type['options'].type === 'POINT') {
+                    result = {
+                        ...OBJECT,
+                        properties: {
+                            type: {
+                                type: 'string',
+                                enum: ['POINT']
+                            },
+                            coordinates: pointCoordinatesSchema,
+                            crs: crsSchema
+                        },
+                        required
+                    }
+                } else {
+                    result = {
+                        ...OBJECT,
+                        properties: {
+                            type: {
+                                type: 'string',
+                                enum: ['POINT', 'LINESTRING', 'POLYGON']
+                            },
+                            coordinates: {
+                                oneOf: [
+                                    pointCoordinatesSchema,
+                                    linestringCoordinatesSchema,
+                                    polygonCoordinatesSchema,
+                                ]
+                            },
+                            crs: crsSchema
+                        },
+                        required
+                    }
+                }
+
                 break
             }
 

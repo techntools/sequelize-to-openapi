@@ -516,6 +516,30 @@ const User = (function () {
         }
     }
 
+    if (supportedDataType('GEOMETRY')) {
+        attributes = {
+            ...attributes,
+
+            GEOMETRY: {
+                type: DataTypes.GEOMETRY
+            },
+
+            GEOMETRY_POINT: {
+                type: DataTypes.GEOMETRY('POINT', 4326)
+            },
+            GEOMETRY_LINESTRING: {
+                type: DataTypes.GEOMETRY('LINESTRING', 4326)
+            },
+            GEOMETRY_POLYGON: {
+                type: DataTypes.GEOMETRY('POLYGON', 4326)
+            },
+
+            GEOGRAPHY_POINT: {
+                type: DataTypes.GEOGRAPHY('POINT', 4326)
+            },
+        }
+    }
+
     const Model = sequelize.define(
         'user',
         {

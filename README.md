@@ -46,19 +46,11 @@ const userSchema = schemaManager.generate(userModel, strategy, {
 });
 ```
 
-`title` and `description` are dropped
+`title` and `description` are dropped.
 
-`jsonSchema` and `schema` works the same as sequelize-to-json-schemas
+`jsonSchema` and `schema` works the same as sequelize-to-json-schemas.
 
-Starting from 1.0.0, associations are excluded by default
-
-## Unsupported Types
-
-* GEOMETRY
-* ABSTRACT
-* GEOGRAPHY
-
-While sequelize-to-json-schemas throws error for these, this package simply ignores them so that you can use generated schema for rest of the types and support these types the way you see fit
+Starting from 1.0.0, associations are excluded by default.
 
 ## Validators
 
@@ -264,6 +256,151 @@ Postgres HSTORE is supported with following schema:
         }
     },
     "additionalProperties": false
+}
+```
+
+## GEOMETRY and GEOGRAPHY Data Types
+
+POINT, LINESTRING, POLYGON specific schemas are supported. If they are not mentioned, all inclusive larger schema is supported as well.
+
+Schema for `DataTypes.GEOMETRY('POINT', 4326)`:
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "enum": [
+                "POINT"
+            ]
+        },
+        "coordinates": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 3
+        },
+        "crs": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "properties": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "required": [
+                        "name"
+                    ]
+                }
+            },
+            "required": [
+                "type",
+                "properties"
+            ]
+        }
+    },
+    "required": [
+        "type",
+        "coordinates"
+    ],
+    "nullable": true
+}
+```
+
+Schema for `DataTypes.GEOMETRY`:
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "enum": [
+                "POINT",
+                "LINESTRING",
+                "POLYGON"
+            ]
+        },
+        "coordinates": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 3
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 3
+                    },
+                    "minItems": 2
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "type": "number"
+                            },
+                            "minItems": 2,
+                            "maxItems": 3
+                        },
+                        "minItems": 4
+                    }
+                }
+            ]
+        },
+        "crs": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "properties": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "required": [
+                        "name"
+                    ]
+                }
+            },
+            "required": [
+                "type",
+                "properties"
+            ]
+        }
+    },
+    "required": [
+        "type",
+        "coordinates"
+    ],
+    "nullable": true
 }
 ```
 
