@@ -26,7 +26,7 @@ describe('postgres hstore type OpenAPI schema', function () {
 
         {
             /*
-             * HSTORE allows only string and null
+             * HSTORE keys are string only and values are string/null
              */
 
             var valid = validate({ k: 'val' })
