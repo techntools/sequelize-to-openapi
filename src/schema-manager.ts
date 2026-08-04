@@ -9,7 +9,7 @@ import { pick, omit } from './utils/util'
 
 export type ModelContainer = {
     type: string,
-    properties?: {}
+    properties?: Record<string, any>
     required?: string[],
     additionalProperties: boolean
 }
