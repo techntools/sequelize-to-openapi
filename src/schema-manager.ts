@@ -94,7 +94,7 @@ export default class SchemaManager {
         checkTypeOptional('exclude', options.exclude, 'array')
 
         if (options.include.length > 0 && options.exclude.length > 0) {
-            throw new Error("Model options 'include' and 'exclude' are mutually exclusive")
+            throw new TypeError("Model options 'include' and 'exclude' are mutually exclusive")
         }
 
         checkTypeRequired('associations', options.associations, 'boolean')
@@ -102,7 +102,7 @@ export default class SchemaManager {
         checkTypeRequired('excludeAssociations', options.excludeAssociations, 'array')
 
         if (options.includeAssociations.length > 0 && options.excludeAssociations.length > 0) {
-            throw new Error(
+            throw new TypeError(
                 "Model options 'includeAssociations' and 'excludeAssociations' are mutually exclusive",
             )
         }
