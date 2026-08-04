@@ -52,6 +52,10 @@ const userSchema = schemaManager.generate(userModel, strategy, {
 
 Starting from 1.0.0, associations are excluded by default.
 
+Association types that are not one of `HasOne`, `BelongsTo`, `HasMany`, or `BelongsToMany` are silently dropped from the generated schema without a warning.
+
+Names listed in `include`, `exclude`, `includeAssociations`, or `excludeAssociations` that do not match any model attribute or association are silently ignored.
+
 ## Validators
 
 Following validators are supported:

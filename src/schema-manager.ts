@@ -125,6 +125,9 @@ export default class SchemaManager {
         const model = _model.get(this)
         const attributes = model.getAttributes.bind(model)()
 
+        // `pick`/`omit` only consider keys present on the model, so listing
+        // an attribute in `include`/`exclude` that the model does not define
+        // is silently ignored rather than treated as an error.
         if (_modelOptions.get(this).include.length > 0)
             return pick(attributes, _modelOptions.get(this).include)
 
@@ -280,6 +283,8 @@ export default class SchemaManager {
                 return _strategy.get(this).getPropertyForBelongsToManyAssociation(associationName, association)
 
             default:
+                // Unknown association types are silently dropped to keep generation
+                // forward-compatible with future Sequelize association kinds.
                 return null
         }
     }
