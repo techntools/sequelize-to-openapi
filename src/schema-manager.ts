@@ -32,7 +32,7 @@ const _model = new WeakMap<SchemaManager, typeof Model>()
 export default class SchemaManager {
     generate(model: typeof Model, strategy: OpenApiStrategy, options?: ModelOptions) {
         if (model === undefined) throw new Error('Missing method argument `model`')
-        if (strategy === undefined) throw new Error('Mising method argument `strategy`')
+        if (strategy === undefined) throw new Error('Missing method argument `strategy`')
 
         this.verifyModelOptions(
             Object.assign(
