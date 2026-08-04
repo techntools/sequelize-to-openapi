@@ -233,8 +233,14 @@ export default class SchemaManager {
     getCustomPropertyValue(propertyName: string, attributeProperties: ModelAttributeColumnOptions) {
         const jsonSchema = attributeProperties['jsonSchema']
 
-        if (!jsonSchema)
+        if (jsonSchema === undefined || jsonSchema === null)
             return null
+
+        if (typeof jsonSchema !== 'object' || Array.isArray(jsonSchema)) {
+            throw new TypeError(
+                `Custom property 'jsonSchema' for sequelize attribute must be an object or null`,
+            )
+        }
 
         if (!jsonSchema[propertyName])
             return null
