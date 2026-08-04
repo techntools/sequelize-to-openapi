@@ -205,16 +205,6 @@ export default class TypeMapper {
                 break
             }
 
-            case 'VIRTUAL': {
-                result = this.map(
-                    attributeName,
-                    { ...properties, type: properties.type && properties.type['returnType'] },
-                    strategy
-                )
-
-                break
-            }
-
             case 'RANGE': {
                 result = { ...ARRAY }
                 break
