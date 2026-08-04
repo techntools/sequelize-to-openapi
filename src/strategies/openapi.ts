@@ -34,20 +34,20 @@ export default class OpenApiStrategy {
         }
     }
 
-    getPropertyForHasOneAssociation(associationName: string, association: Association) {
+    private generateRefObject(associationName: string, targetName: string) {
         return {
             [associationName]: {
-                $ref: `#/components/schemas/${association.target.name}`
+                $ref: `#/components/schemas/${targetName}`
             }
         }
     }
 
+    getPropertyForHasOneAssociation(associationName: string, association: Association) {
+        return this.generateRefObject(associationName, association.target.name)
+    }
+
     getPropertyForBelongsToAssociation(associationName: string, association: Association) {
-        return {
-            [associationName]: {
-                $ref: `#/components/schemas/${association.target.name}`
-            }
-        }
+        return this.generateRefObject(associationName, association.target.name)
     }
 
     getPropertyForHasManyAssociation(associationName: string, association: Association) {
@@ -61,93 +61,92 @@ export default class OpenApiStrategy {
         }
     }
 
-    getPropertyForBelongsToManyAssociation(associationName: string, association: Association) {
+    getPropertyForBelongsToManyAssociation(associationName: string, association: any) {
+        const throughModelPlural = association?.through?.model?.options?.name?.plural
+        const throughModelName = association?.through?.model?.name
+        const targetName = association?.target?.name
+
+        const allOf: any[] = []
+
+        if (targetName) {
+            allOf.push({ $ref: `#/components/schemas/${targetName}` })
+        }
+
+        if (throughModelPlural && throughModelName) {
+            allOf.push({
+                type: 'object',
+                properties: {
+                    [throughModelPlural]: {
+                        $ref: `#/components/schemas/${throughModelName}`,
+                    },
+                },
+            })
+        }
+
+        const items = allOf.length === 1
+            ? allOf[0]
+            : { allOf }
+
         return {
             [associationName]: {
                 type: 'array',
-                items: {
-                    allOf: [
-                        {
-                            $ref: `#/components/schemas/${association.target.name}`,
-                        },
-                        {
-                            type: 'object',
-                            properties: {
-                                [association['through']['model']['options']['name']['plural']]: {
-                                    $ref: `#/components/schemas/${association['through']['model']['name']}`,
-                                },
-                            },
-                        },
-                    ],
-                },
+                items,
             },
         }
     }
 
     /**
+     * Extract args or return value.
+     * @param val Validation value or object with args.
+     */
+    private extractValue(val: any) {
+        if (!val) return val
+        if (val.args) return val.args
+        return val
+    }
+
+    /**
      * Returns the properties to validate value.
-     *
-     * @example
-     * {
-     *   sequence: {
-     *     type: "integer",
-     *     minimum: 1,
-     *     maximum: 100,
-     *   }
-     * }
      */
     getPropertiesForValidate(validate: ModelValidateOptions) {
-        if (!validate)
-            return
+        if (!validate) return
 
-        const result = {}
+        const result: any = {}
 
-        Object.keys(validate).map(key => {
+        for (const key of Object.keys(validate)) {
             const val: any = validate[key]
 
-            switch(key) {
+            switch (key) {
                 case 'min': {
-                    if (val || val === 0) {
-                        if (val.args)
-                            result['minimum'] = val.args[0]
-                        else
-                            result['minimum'] = val
+                    const v = this.extractValue(val)
+                    if (v || v === 0) {
+                        result['minimum'] = Array.isArray(v) ? v[0] : v
                     }
+                    break
                 }
-
-                break
 
                 case 'max': {
-                    if (val || val === 0) {
-                        if (val.args)
-                            result['maximum'] = val.args[0]
-                        else
-                            result['maximum'] = val
+                    const v = this.extractValue(val)
+                    if (v || v === 0) {
+                        result['maximum'] = Array.isArray(v) ? v[0] : v
                     }
+                    break
                 }
-
-                break
 
                 case 'isEmail': {
-                    if (val)
-                        result['format'] = 'email'
+                    if (val) result['format'] = 'email'
+                    break
                 }
-
-                break
 
                 case 'isUUID': {
-                    if (val)
-                        result['format'] = 'uuid'
+                    if (val) result['format'] = 'uuid'
+                    break
                 }
-
-                break
 
                 case 'notEmpty': {
-                    if (val)
-                        result['minLength'] = 1
+                    if (val) result['minLength'] = 1
+                    break
                 }
-
-                break
 
                 case 'len': {
                     if (Array.isArray(val)) {
@@ -157,56 +156,41 @@ export default class OpenApiStrategy {
                         result['minLength'] = val.args[0]
                         result['maxLength'] = val.args[1]
                     }
+                    break
                 }
-
-                break
 
                 case 'isUrl': {
-                    if (val)
-                        result['format'] = 'url'
+                    if (val) result['format'] = 'url'
+                    break
                 }
-
-                break
 
                 case 'isAlpha': {
-                    if (val)
-                        result['pattern'] = '^[a-zA-Z]+$'
+                    if (val) result['pattern'] = '^[a-zA-Z]+$'
+                    break
                 }
 
-                break
-
                 case 'isNumeric': {
-                    if (val)
-                        result['pattern'] = '^[0-9]+$'
-
+                    if (val) result['pattern'] = '^[0-9]+$'
                     break
                 }
 
                 case 'isAlphanumeric': {
-                    if (val)
-                        result['pattern'] = '^[a-zA-Z0-9]+$'
+                    if (val) result['pattern'] = '^[a-zA-Z0-9]+$'
+                    break
                 }
 
-                break
-
                 case 'isLowercase': {
-                    if (val)
-                        result['pattern'] = '^[a-z]+$'
-
+                    if (val) result['pattern'] = '^[a-z]+$'
                     break
                 }
 
                 case 'isUppercase': {
-                    if (val)
-                        result['pattern'] = '^[A-Z]+$'
-
+                    if (val) result['pattern'] = '^[A-Z]+$'
                     break
                 }
 
                 case 'contains': {
-                    if (val)
-                        result['pattern'] = '^.*' + val + '.*$'
-
+                    if (val) result['pattern'] = '^.*' + val + '.*$'
                     break
                 }
 
@@ -219,7 +203,6 @@ export default class OpenApiStrategy {
                     } else {
                         result['pattern'] = '^(?!.*' + val + ').*$'
                     }
-
                     break
                 }
 
@@ -228,87 +211,72 @@ export default class OpenApiStrategy {
                         const args = val.args.reduce((acc: (string | number)[], arg: (string | number)[]) => {
                             return acc.concat(arg)
                         }, [])
-
                         result['not'] = { enum: args }
                     } else {
                         result['not'] = { enum: val[0] }
                     }
-
                     break
                 }
 
                 case 'is': {
-                    if (val instanceof RegExp)
+                    if (val instanceof RegExp) {
                         result['regexp'] = val.toString()
-
-                    if (Array.isArray(val)) {
+                    } else if (Array.isArray(val)) {
                         result['regexp'] = {
                             pattern: val[0],
                             flags: val[1],
                         }
-                    }
-
-                    if (val.args) {
-                        if (val.args instanceof RegExp)
+                    } else if (val.args) {
+                        if (val.args instanceof RegExp) {
                             result['regexp'] = val.args.toString()
-
-                        if (Array.isArray(val.args)) {
+                        } else if (Array.isArray(val.args)) {
                             result['regexp'] = {
                                 pattern: val.args[0],
-                                flags: val.args[1]
+                                flags: val.args[1],
                             }
-                        }
-
-                        if (typeof val.args === 'string')
+                        } else if (typeof val.args === 'string') {
                             result['regexp'] = (new RegExp(val.args)).toString()
-                    }
-
-                    if (typeof val === 'string')
+                        }
+                    } else if (typeof val === 'string') {
                         result['regexp'] = (new RegExp(val)).toString()
-
+                    }
                     break
                 }
 
                 case 'not': {
-                    if (val && val instanceof RegExp)
+                    if (val && val instanceof RegExp) {
                         result['not'] = { regexp: val.toString() }
-
-                    if (Array.isArray(val)) {
+                    } else if (Array.isArray(val)) {
                         result['not'] = {
-                            'regexp': {
+                            regexp: {
                                 pattern: val[0],
                                 flags: val[1],
-                            }
+                            },
                         }
-                    }
-
-                    if (val.args) {
-                        if (val.args instanceof RegExp)
+                    } else if (val.args) {
+                        if (val.args instanceof RegExp) {
                             result['not'] = { regexp: val.args.toString() }
-
-                        if (Array.isArray(val.args)) {
+                        } else if (Array.isArray(val.args)) {
                             result['not'] = {
-                                'regexp': {
+                                regexp: {
                                     pattern: val.args[0],
-                                    flags: val.args[1]
-                                }
+                                    flags: val.args[1],
+                                },
                             }
-                        }
-
-                        if (typeof val.args === 'string')
+                        } else if (typeof val.args === 'string') {
                             result['not'] = { regexp: (new RegExp(val.args)).toString() }
-                    }
-
-                    if (typeof val === 'string')
+                        }
+                    } else if (typeof val === 'string') {
                         result['not'] = { regexp: (new RegExp(val)).toString() }
-
+                    }
                     break
                 }
 
-                default:
+                default: {
                     break
+                }
             }
-        })
+        }
 
         return result
     }
