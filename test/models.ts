@@ -19,10 +19,77 @@ const User = (function () {
     // added to the model if supported by this sequelize version.
     // --------------------------------------------------------------------------
 
-    let attributes: { [key: string]: ModelAttributeColumnOptions } = {}
+    let attributes: { [key: string]: ModelAttributeColumnOptions } = {
+        // --------------------------------------------------------------------
+        // These types can be considered primitive enough for any database to
+        // support
+        // --------------------------------------------------------------------
+
+        BOOLEAN: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+        },
+
+        CHAR: {
+            type: DataTypes.CHAR,
+            allowNull: false,
+        },
+
+        DATEONLY: {
+            type: DataTypes.DATEONLY,
+            allowNull: false,
+        },
+
+        TIME: {
+            type: DataTypes.TIME,
+            allowNull: false,
+        },
+
+        NUMBER: {
+            type: DataTypes.NUMBER,
+            allowNull: false,
+        },
+
+        DECIMAL: {
+            type: DataTypes.DECIMAL,
+            allowNull: false,
+        },
+
+        DOUBLE: {
+            type: DataTypes.DOUBLE,
+            allowNull: false,
+        },
+
+        FLOAT: {
+            type: DataTypes.FLOAT,
+            allowNull: false,
+        },
+
+        REAL: {
+            type: DataTypes.REAL,
+            allowNull: false,
+        },
+
+        MEDIUMINT: {
+            type: DataTypes.MEDIUMINT,
+            allowNull: false,
+        },
+
+        SMALLINT: {
+            type: DataTypes.SMALLINT,
+            allowNull: false,
+        },
+
+        TINYINT: {
+            type: DataTypes.TINYINT,
+            allowNull: false,
+        },
+    }
 
     if (supportedDataType('ARRAY')) {
         attributes = {
+            ...attributes,
+
             ARRAY_INTEGERS: {
                 type: DataTypes.ARRAY(DataTypes.INTEGER),
                 allowNull: false,
@@ -272,6 +339,52 @@ const User = (function () {
                 }
             },
 
+            STRING_IS_UUID: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    isUUID: 4,
+                }
+            },
+
+            STRING_IS_ARGED_STRING: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    is: {
+                        args: '^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$',
+                        msg: 'should match'
+                    }
+                }
+            },
+
+            STRING_IS_ARGED_REGEXP: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    is: {
+                        args: /^(\([0-9]{3}\))?[0-9]{3}-[0-9]{4}$/,
+                        msg: 'should match'
+                    }
+                }
+            },
+
+            STRING_IS_ARRAY: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    is: ["^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$", "i"],
+                }
+            },
+
+            STRING_IS_ARGED_ARRAY: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    is: { args: ["^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$", "i"], msg: 'should match' }
+                }
+            },
+
             STRING_NOT: {
                 type: DataTypes.STRING,
                 allowNull: false,
@@ -285,6 +398,44 @@ const User = (function () {
                 allowNull: false,
                 validate: {
                     not: '^[a-z]+$'
+                }
+            },
+
+            STRING_NOT_ARGED_STRING: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    not: {
+                        args: '^[a-z]+$',
+                        msg: 'should not match'
+                    }
+                }
+            },
+
+            STRING_NOT_ARGED_REGEXP: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    not: {
+                        args: /^[a-z]+$/i,
+                        msg: 'should not match'
+                    }
+                }
+            },
+
+            STRING_NOT_ARRAY: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    not: ['^[a-z]+$', 'i']
+                }
+            },
+
+            STRING_NOT_ARGED_ARRAY: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    not: { args: ['^[a-z]+$', 'i'], msg: 'should not match' }
                 }
             },
 
@@ -304,68 +455,38 @@ const User = (function () {
         }
     }
 
-    attributes = {
-        ...attributes,
+    if (supportedDataType('BIGINT')) {
+        attributes = {
+            ...attributes,
+            BIGINT: {
+                type: DataTypes.BIGINT,
+                allowNull: false,
+            },
+        }
+    }
 
-        STRING_IS_ARGED_STRING: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                is: {
-                    args: '^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$',
-                    msg: 'should match'
-                }
-            }
-        },
+    if (supportedDataType('MACADDR')) {
+        attributes = {
+            ...attributes,
+            MACADDR: {
+                type: DataTypes.MACADDR,
+                allowNull: false,
+            },
+        }
+    }
 
-        STRING_IS_ARGED_REGEXP: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                is: {
-                    args: /^(\([0-9]{3}\))?[0-9]{3}-[0-9]{4}$/,
-                    msg: 'should match'
-                }
-            }
-        },
+    if (supportedDataType('CIDR')) {
+        attributes = {
+            ...attributes,
+            CIDR: { type: DataTypes.CIDR, allowNull: false }
+        }
+    }
 
-        STRING_IS_ARRAY: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                is: ["^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$", "i"],
-            }
-        },
-
-        STRING_NOT_ARGED_STRING: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                not: {
-                    args: '^[a-z]+$',
-                    msg: 'should not match'
-                }
-            }
-        },
-
-        STRING_NOT_ARGED_REGEXP: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                not: {
-                    args: /^[a-z]+$/i,
-                    msg: 'should not match'
-                }
-            }
-        },
-
-        STRING_NOT_ARRAY: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                not: ['^[a-z]+$', 'i']
-            }
-        },
+    if (supportedDataType('INET')) {
+        attributes = {
+            ...attributes,
+            INET: { type: DataTypes.INET, allowNull: false }
+        }
     }
 
     if (supportedDataType('TEXT')) {
@@ -378,11 +499,31 @@ const User = (function () {
         }
     }
 
+    if (supportedDataType('UUID')) {
+        attributes = {
+            ...attributes,
+            UUID: {
+                type: DataTypes.UUID,
+                allowNull: false,
+            },
+        }
+    }
+
+    if (supportedDataType('UUIDV1')) {
+        attributes = {
+            ...attributes,
+            UUIDV1: {
+                type: DataTypes.UUIDV1,
+                allowNull: false,
+            },
+        }
+    }
+
     if (supportedDataType('UUIDV4')) {
         attributes = {
             ...attributes,
             UUIDV4: {
-                type: DataTypes.UUID,
+                type: DataTypes.UUIDV4,
                 allowNull: false,
             }
         }

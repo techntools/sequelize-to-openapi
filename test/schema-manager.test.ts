@@ -117,4 +117,189 @@ describe('SchemaManager', function() {
             expect(schema.properties).toHaveProperty('documents');
         });
     });
+
+    // ------------------------------------------------------------------------
+    // Validation and guard-rail behavior of SchemaManager.generate()
+    // ------------------------------------------------------------------------
+    describe('SchemaManager validation and guard rails', function () {
+        const { DataTypes } = require('sequelize')
+        const sequelize = (models as any).sequelize
+        const schemaManager = new SchemaManager
+        const strategy = new OpenApiStrategy
+
+        it("throws when model is missing", function () {
+            expect(() => schemaManager.generate(undefined as any, strategy)).toThrow(
+                'Missing method argument `model`',
+            )
+        })
+
+        it("throws when strategy is missing", function () {
+            expect(() => schemaManager.generate(models.User, undefined as any)).toThrow(
+                'Missing method argument `strategy`',
+            )
+        })
+
+        it("throws when strategy is not an OpenApiStrategy", function () {
+            expect(() => schemaManager.generate(models.User, {} as any)).toThrow(
+                "Strategy must implement the 'OpenApiStrategy'",
+            )
+        })
+
+        it("throws when model is not a Sequelize v6 model", function () {
+            expect(() => schemaManager.generate({} as any, strategy)).toThrow(
+                'Provided model does not match expected format. Are you sure this is a Sequelize v6+ model ?',
+            )
+        })
+
+        it("throws when both 'include' and 'exclude' are provided", function () {
+            expect(() =>
+                schemaManager.generate(models.User, strategy, {
+                    include: ['id'],
+                    exclude: ['id'],
+                }),
+            ).toThrow("Model options 'include' and 'exclude' are mutually exclusive")
+        })
+
+        it("throws when both 'includeAssociations' and 'excludeAssociations' are provided", function () {
+            expect(() =>
+                schemaManager.generate(models.User, strategy, {
+                    includeAssociations: ['profile'],
+                    excludeAssociations: ['profile'],
+                    associations: true,
+                }),
+            ).toThrow(
+                "Model options 'includeAssociations' and 'excludeAssociations' are mutually exclusive",
+            )
+        })
+
+        it("throws when 'examples' is not an array", function () {
+            const BadModel = sequelize.define(
+                'bad_examples',
+                {
+                    value: {
+                        type: DataTypes.STRING,
+                        allowNull: false,
+                        jsonSchema: { examples: 'not-an-array' },
+                    },
+                },
+                { timestamps: false, underscored: false },
+            )
+
+            expect(() => schemaManager.generate(BadModel, strategy)).toThrow(
+                "The 'examples' property MUST be an array",
+            )
+        })
+
+        it("throws when both 'readOnly' and 'writeOnly' are provided", function () {
+            const BadModel = sequelize.define(
+                'bad_readwrite',
+                {
+                    value: {
+                        type: DataTypes.STRING,
+                        allowNull: false,
+                        jsonSchema: { readOnly: true, writeOnly: true },
+                    },
+                },
+                { timestamps: false, underscored: false },
+            )
+
+            expect(() => schemaManager.generate(BadModel, strategy)).toThrow(
+                "Custom properties 'readOnly' and 'writeOnly' for sequelize attribute 'value' are mutually exclusive",
+            )
+        })
+
+        it("throws when 'writeOnly' is not a boolean", function () {
+            const BadModel = sequelize.define(
+                'bad_writeonly',
+                {
+                    value: {
+                        type: DataTypes.STRING,
+                        allowNull: false,
+                        jsonSchema: { writeOnly: 'yes' },
+                    },
+                },
+                { timestamps: false, underscored: false },
+            )
+
+            expect(() => schemaManager.generate(BadModel, strategy)).toThrow(
+                "Required configuration setting 'writeOnly' not of type 'boolean'",
+            )
+        })
+
+        it("throws when 'readOnly' is not a boolean", function () {
+            const BadModel = sequelize.define(
+                'bad_readonly',
+                {
+                    value: {
+                        type: DataTypes.STRING,
+                        allowNull: false,
+                        jsonSchema: { readOnly: 'yes' },
+                    },
+                },
+                { timestamps: false, underscored: false },
+            )
+
+            expect(() => schemaManager.generate(BadModel, strategy)).toThrow(
+                "Required configuration setting 'readOnly' not of type 'boolean'",
+            )
+        })
+
+        it("throws when 'jsonSchema.schema' is not an object with a string type", function () {
+            const BadModel = sequelize.define(
+                'bad_schema',
+                {
+                    value: {
+                        type: DataTypes.STRING,
+                        allowNull: false,
+                        jsonSchema: { schema: 'just-a-string' },
+                    },
+                },
+                { timestamps: false, underscored: false },
+            )
+
+            expect(() => schemaManager.generate(BadModel, strategy)).toThrow(
+                "Custom property 'schema' for sequelize attribute 'value' should be an object with a 'type' key",
+            )
+        })
+
+        it("throws when 'jsonSchema' itself is not an object", function () {
+            const BadModel = sequelize.define(
+                'bad_jsonschema',
+                {
+                    value: {
+                        type: DataTypes.STRING,
+                        allowNull: false,
+                        jsonSchema: 'not-an-object' as any,
+                    },
+                },
+                { timestamps: false, underscored: false },
+            )
+
+            expect(() => schemaManager.generate(BadModel, strategy)).toThrow(
+                "Custom property 'jsonSchema' for sequelize attribute must be an object or null",
+            )
+        })
+
+        it("returns null for associations whose associationType is unknown", function () {
+            const Owner = sequelize.define(
+                'owner_unknown_assoc',
+                { value: { type: DataTypes.STRING, allowNull: false } },
+                { timestamps: false, underscored: false },
+            )
+            const Pet = sequelize.define(
+                'pet_unknown_assoc',
+                { name: { type: DataTypes.STRING, allowNull: false } },
+                { timestamps: false, underscored: false },
+            )
+
+            ;(Owner as any).associations['mystery'] = {
+                associationType: 'SomethingMadeUp',
+                target: Pet,
+            }
+
+            const schema = schemaManager.generate(Owner, strategy, { associations: true })
+
+            expect(schema.properties!['mystery']).toBeUndefined()
+        })
+    })
 })

@@ -29,85 +29,140 @@ describe('OpenApi3Strategy', function () {
         addKeywords(ajv, "regexp")
         addFormats(ajv)
 
-        // ------------------------------------------------------------------------
-        // make sure sequelize DataTypes render as expected
-        // ------------------------------------------------------------------------
-        describe('Ensure Sequelize DataTypes are properly converted and thus:', function () {
-            describe('BLOB', function () {
-                it("has property 'format' of type 'byte'", function () {
-                    expect(schema.properties!['BLOB']['format']).toEqual('byte')
+        describe('Ensure Sequelize DataTypes render as expected and thus:', function () {
+            const expectations: Array<{ name: string, expected: any }> = [
+                { name: 'BIGINT', expected: { type: 'integer', format: 'int64' } },
+                { name: 'BOOLEAN', expected: { type: 'boolean' } },
+                { name: 'CHAR', expected: { type: 'string' } },
+                { name: 'DATEONLY', expected: { type: 'string', format: 'date' } },
+                { name: 'TIME', expected: { type: 'string', format: 'time' } },
+                { name: 'NUMBER', expected: { type: 'number' } },
+                { name: 'DECIMAL', expected: { type: 'number' } },
+                { name: 'DOUBLE', expected: { type: 'number', format: 'double' } },
+                { name: 'FLOAT', expected: { type: 'number', format: 'float' } },
+                { name: 'REAL', expected: { type: 'number' } },
+                { name: 'MEDIUMINT', expected: { type: 'integer' } },
+                { name: 'SMALLINT', expected: { type: 'integer' } },
+                { name: 'TINYINT', expected: { type: 'number' } }
+            ]
+
+            for (const { name, expected } of expectations) {
+                it(name + ' maps to expected OpenAPI schema', function () {
+                    expect(schema.properties![name]).toEqual(expected)
+                })
+            }
+
+            describe('STRING_ALLOWNULL_EXPLICIT', function () {
+                it("has property 'type' of type 'string'", function () {
+                    expect(schema.properties!['STRING_ALLOWNULL_EXPLICIT'].type).toEqual('string')
+                })
+
+                it("has property 'nullable' of type 'boolean'", function () {
+                    expect(typeof schema.properties!['STRING_ALLOWNULL_EXPLICIT'].nullable).toEqual('boolean')
                 })
             })
 
-            describe('UUIDV4', function () {
-                it("has property 'format' of type 'byte'", function () {
-                    expect(schema.properties!['UUIDV4']['format']).toEqual('uuid')
+            // Sequelize allows null values by default so we need to make sure rendered schema
+            // keys allow null by default (even when not explicitely setting `allowNull: true`)
+            describe('STRING_ALLOWNULL_IMPLICIT', function () {
+                it("has property 'type' of type 'string'", function () {
+                    expect(schema.properties!['STRING_ALLOWNULL_IMPLICIT'].type).toEqual('string')
+                })
+
+                it("has property 'nullable' of type 'boolean'", function () {
+                    expect(typeof schema.properties!['STRING_ALLOWNULL_IMPLICIT'].nullable).toEqual('boolean')
                 })
             })
+
+            describe('JSONB_ALLOWNULL', function () {
+                it("has property 'anyOf' with values of type 'object', 'array', 'boolean', 'integer', 'number' and 'string'", function () {
+                    expect(schema.properties!['JSONB_ALLOWNULL'].anyOf).toEqual([
+                        { type: 'object' },
+                        { type: 'array' },
+                        { type: 'boolean' },
+                        { type: 'integer' },
+                        { type: 'number' },
+                        { type: 'string' },
+                    ])
+                })
+
+                it("has property 'nullable' of type 'boolean'", function () {
+                    expect(typeof schema.properties!['JSONB_ALLOWNULL'].nullable).toEqual('boolean')
+                })
+            })
+
+            describe('ARRAY_ALLOWNULL_EXPLICIT', function () {
+                it("has property 'type' of type 'string'", function () {
+                    expect(schema.properties!['ARRAY_ALLOWNULL_EXPLICIT'].type).toEqual('array')
+                })
+
+                it("has property 'nullable' of type 'boolean'", function () {
+                    expect(typeof schema.properties!['ARRAY_ALLOWNULL_EXPLICIT'].nullable).toEqual('boolean')
+                })
+            })
+
+            describe('ARRAY_ALLOWNULL_IMPLICIT', function () {
+                it("has property 'type' of type 'string'", function () {
+                    expect(schema.properties!['ARRAY_ALLOWNULL_IMPLICIT'].type).toEqual('array')
+                })
+
+                it("has property 'nullable' of type 'boolean'", function () {
+                    expect(typeof schema.properties!['ARRAY_ALLOWNULL_IMPLICIT'].nullable).toEqual('boolean')
+                })
+            })
+
+            it("BLOB has property 'format' of type 'byte'", function () {
+                expect(schema.properties!['BLOB']['format']).toEqual('byte')
+            })
+
+            it("UUID has 'uuid' format", function () {
+                expect(schema.properties!['UUID']['format']).toEqual('uuid')
+            })
+
+            it("UUIDV1 has 'uuid' format", function () {
+                expect(schema.properties!['UUIDV1']['format']).toEqual('uuid')
+            })
+
+            it("UUIDV4 has 'uuid' format", function () {
+                expect(schema.properties!['UUIDV4']['format']).toEqual('uuid')
+            })
+
+            it("MACADDR maps to expected OpenAPI schema", function () {
+                expect(schema.properties!['MACADDR']).toEqual({ type: 'string' })
+            })
+
+            it("CIDR maps to expected OpenAPI schema", function () {
+                expect(schema.properties!['MACADDR']).toEqual({ type: 'string' })
+            })
+
+            it("INET maps to a union of ipv4 and ipv6 strings", function () {
+                expect(schema.properties!['INET']).toEqual({
+                    type: [
+                        { type: 'string', format: 'ipv4' },
+                        { type: 'string', format: 'ipv6' },
+                    ],
+                })
+            })
+
+            it("VIRTUAL unwraps to the returnType schema", function () {
+                // VIRTUAL(DataTypes.BOOLEAN) should render the same as BOOLEAN
+                expect(schema.properties!['VIRTUAL']).toEqual({ type: 'boolean' })
+
+                // VIRTUAL(DataTypes.INTEGER, ['id']) renders INTEGER
+                expect(schema.properties!['VIRTUAL_DEPENDENCY']).toEqual({ type: 'integer' })
+            })
         })
 
-        describe('STRING_ALLOWNULL_EXPLICIT', function () {
-            it("has property 'type' of type 'string'", function () {
-                expect(schema.properties!['STRING_ALLOWNULL_EXPLICIT'].type).toEqual('string')
+        describe('Ensure Sequelize attribute options render as expected and thus:', function () {
+            it("INTEGER with defaultValue has property 'default' with integer value 0", function () {
+                expect(schema.properties!['INTEGER']['default']).toEqual(0)
             })
 
-            it("has property 'nullable' of type 'boolean'", function () {
-                expect(typeof schema.properties!['STRING_ALLOWNULL_EXPLICIT'].nullable).toEqual('boolean')
-            })
+            it("STRING with defaultValue has property 'default' with expected string value", function () {
+                expect(schema.properties!['STRING']['default']).toEqual('Default value for STRING');
+            });
         })
 
-        // Sequelize allows null values by default so we need to make sure rendered schema
-        // keys allow null by default (even when not explicitely setting `allowNull: true`)
-        describe('STRING_ALLOWNULL_IMPLICIT', function () {
-            it("has property 'type' of type 'string'", function () {
-                expect(schema.properties!['STRING_ALLOWNULL_IMPLICIT'].type).toEqual('string')
-            })
-
-            it("has property 'nullable' of type 'boolean'", function () {
-                expect(typeof schema.properties!['STRING_ALLOWNULL_IMPLICIT'].nullable).toEqual('boolean')
-            })
-        })
-
-        describe('JSONB_ALLOWNULL', function () {
-            it("has property 'anyOf' with values of type 'object', 'array', 'boolean', 'integer', 'number' and 'string'", function () {
-                expect(schema.properties!['JSONB_ALLOWNULL'].anyOf).toEqual([
-                    { type: 'object' },
-                    { type: 'array' },
-                    { type: 'boolean' },
-                    { type: 'integer' },
-                    { type: 'number' },
-                    { type: 'string' },
-                ])
-            })
-
-            it("has property 'nullable' of type 'boolean'", function () {
-                expect(typeof schema.properties!['JSONB_ALLOWNULL'].nullable).toEqual('boolean')
-            })
-        })
-
-        describe('ARRAY_ALLOWNULL_EXPLICIT', function () {
-            it("has property 'type' of type 'string'", function () {
-                expect(schema.properties!['ARRAY_ALLOWNULL_EXPLICIT'].type).toEqual('array')
-            })
-
-            it("has property 'nullable' of type 'boolean'", function () {
-                expect(typeof schema.properties!['ARRAY_ALLOWNULL_EXPLICIT'].nullable).toEqual('boolean')
-            })
-        })
-
-        describe('ARRAY_ALLOWNULL_IMPLICIT', function () {
-            it("has property 'type' of type 'string'", function () {
-                expect(schema.properties!['ARRAY_ALLOWNULL_IMPLICIT'].type).toEqual('array')
-            })
-
-            it("has property 'nullable' of type 'boolean'", function () {
-                expect(typeof schema.properties!['ARRAY_ALLOWNULL_IMPLICIT'].nullable).toEqual('boolean')
-            })
-        })
-
-        // ------------------------------------------------------------------------
-        // make sure custom Sequelize attribute options render as expected
-        // ------------------------------------------------------------------------
         describe('Ensure custom Sequelize attribute options render as expected and thus:', function () {
             describe('CUSTOM_DESCRIPTION', function () {
                 it("has property 'description' with the expected string value", function () {
@@ -129,12 +184,17 @@ describe('OpenApi3Strategy', function () {
                     ])
                 })
             })
+
+            it("CUSTOM_READONLY has property 'readOnly' with value 'true'", function () {
+                expect(schema.properties!['CUSTOM_READONLY']['readOnly']).toEqual(true);
+            });
+
+            it("CUSTOM_WRITEONLY has property 'writeOnly' with value 'true'", function () {
+                expect(schema.properties!['CUSTOM_WRITEONLY']['writeOnly']).toEqual(true);
+            });
         })
 
-        // ------------------------------------------------------------------------
-        // make sure associations render as expected
-        // ------------------------------------------------------------------------
-        describe('Ensure associations are properly generated and thus:', function () {
+        describe('Ensure associations render as expected and thus:', function () {
             describe("user.HasOne(profile) generates singular property 'profile' with:", function () {
                 it("property '$ref' pointing to '#/components/schemas/profile'", function () {
                     expect(schema.properties!['profile'].$ref).toEqual('#/components/schemas/profile')
@@ -251,7 +311,7 @@ describe('OpenApi3Strategy', function () {
             })
         })
 
-        describe('Ensure Sequelize validations are properly added and thus:', function () {
+        describe('Ensure Sequelize validations render as expected and thus:', function () {
             describe('INTEGER', function () {
                 it("has numeric property 'minimum'", function () {
                     expect(schema.properties!['INTEGER'].minimum).toEqual(0)
@@ -627,11 +687,131 @@ describe('OpenApi3Strategy', function () {
                         expect(valid).toBe(true)
                     }
                 })
+
+                describe("isUUID validator", function () {
+                    it('produces uuid format', function () {
+                        expect(schema.properties!['STRING_IS_UUID'].format).toEqual('uuid')
+                    })
+
+                    it('accepts a valid UUID and rejects garbage', function () {
+                        const validate = ajv.compile(schema.properties!['STRING_IS_UUID'])
+
+                        expect(validate('550e8400-e29b-41d4-a716-446655440000')).toBe(true)
+                        expect(validate('not-a-uuid')).toBe(false)
+                    })
+                })
+
+                it("produces regexp with pattern and flags from args", function () {
+                    expect(schema.properties!['STRING_IS_ARGED_ARRAY'].regexp.pattern).toEqual(
+                        '^(\\([0-9]{3}\\))?[0-9]{3}-[0-9]{4}$',
+                    )
+                    expect(schema.properties!['STRING_IS_ARGED_ARRAY'].regexp.flags).toEqual('i')
+                })
+
+                describe("not validator with args as array", function () {
+                    it('produces not.regexp with pattern and flags from args', function () {
+                        expect(schema.properties!['STRING_NOT_ARGED_ARRAY'].not.regexp.pattern).toEqual(
+                            '^[a-z]+$',
+                        )
+                        expect(schema.properties!['STRING_NOT_ARGED_ARRAY'].not.regexp.flags).toEqual('i')
+                    })
+
+                    it('rejects value matching the disallowed pattern', function () {
+                        const validate = ajv.compile(schema.properties!['STRING_NOT_ARGED_ARRAY'])
+
+                        // flags 'i' means [a-z] is case-insensitive, so 'AbC' matches the
+                        // pattern and therefore must be rejected by the 'not' wrapper.
+                        expect(validate('AbC')).toBe(false)
+                    })
+
+                    it('accepts value outside the disallowed pattern', function () {
+                        const validate = ajv.compile(schema.properties!['STRING_NOT_ARGED_ARRAY'])
+
+                        // '123' does not match [a-z]+/i, so the not wrapper accepts it.
+                        expect(validate('123')).toBe(true)
+                    })
+                })
+
+                it("silently ignores validators with unsupported names", function () {
+                    const result = strategy.getPropertiesForValidate({
+                        somethingUnsupported: true,
+                    } as any)
+
+                    expect(result).toEqual({})
+                })
             })
         })
 
         describe("Ensure OpenApiStrategy allows 'additionalProperties'", function () {
             expect(schema.additionalProperties).toEqual(true)
+        })
+    })
+
+
+    describe('getPropertyForBelongsToManyAssociation', function () {
+        const strategy = new OpenApiStrategy
+
+        it('uses through model name and plural when available', function () {
+            const result = strategy.getPropertyForBelongsToManyAssociation('friends', {
+                through: {
+                    model: {
+                        name: 'friendship',
+                        options: { name: { plural: 'friendships' } },
+                    },
+                },
+                target: { name: 'user' },
+            } as any)
+
+            expect(result).toEqual({
+                friends: {
+                    type: 'array',
+                    items: {
+                        allOf: [
+                            { $ref: '#/components/schemas/user' },
+                            {
+                                type: 'object',
+                                properties: {
+                                    friendships: {
+                                        $ref: '#/components/schemas/friendship',
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                },
+            })
+        })
+
+        it('omits the through-model block when through is missing', function () {
+            const result = strategy.getPropertyForBelongsToManyAssociation('friends', {
+                through: undefined,
+                target: { name: 'user' },
+            } as any)
+
+            expect(result).toEqual({
+                friends: {
+                    type: 'array',
+                    items: {
+                        $ref: '#/components/schemas/user',
+                    },
+                },
+            })
+        })
+
+        it('omits the through-model block when through.model is missing', function () {
+            const result = strategy.getPropertyForBelongsToManyAssociation('friends', {
+                through: { model: undefined },
+                target: { name: 'user' },
+            } as any)
+
+            expect(result).toEqual({
+                friends: {
+                    type: 'array',
+                    items: {
+                        $ref: '#/components/schemas/user',
+                    },
+                },
+            })
         })
     })
 })
