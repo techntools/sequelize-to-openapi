@@ -44,13 +44,13 @@ const userSchema = schemaManager.generate(userModel, strategy, {
 
 `jsonSchema` and `schema` works the same as sequelize-to-json-schemas.
 
-### Notes
+## Notes
 
 Association types that are not one of `HasOne`, `BelongsTo`, `HasMany`, or `BelongsToMany` are silently dropped from the generated schema without a warning.
 
 Names listed in `include`, `exclude`, `includeAssociations`, or `excludeAssociations` that do not match any model attribute or association are silently ignored.
 
-### Version 1.0.0
+## Version 1.0.0
 
 - Associations are excluded by default.
 - Additional properties can be rejected:
@@ -59,7 +59,7 @@ Names listed in `include`, `exclude`, `includeAssociations`, or `excludeAssociat
   const strategy = new OpenApiStrategy({ additionalProperties: false })
   ```
 
-### Version 2.0.0
+## Version 2.0.0
 
 The following breaking changes were introduced:
 
