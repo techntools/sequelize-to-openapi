@@ -65,7 +65,7 @@ The following breaking changes were introduced:
 
 - Mutually exclusive options (`include`/`exclude` and `includeAssociations`/`excludeAssociations`) now throw `TypeError` instead of plain `Error`.
 - `jsonSchema` now throws `TypeError` if it is not an object instead of a property-read error.
-- A missing through model or association target in a `BelongsToMany` association no longer produces a `$ref` entry or throws a property-read error.
+- A missing through model or association target in a `BelongsToMany` association no longer produces a `$ref` entry instead of throwing a property-read error.
 
 ## Validators
 
