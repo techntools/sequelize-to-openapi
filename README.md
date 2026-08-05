@@ -28,12 +28,6 @@ oapi.schema('User', schemaManager.generate(UserModel, strategy))
 
 ## Configuration Options
 
-Starting from 1.0.0, additional properties can be rejected
-
-```typescript
-const strategy = new OpenApiStrategy({ additionalProperties: false })
-```
-
 Pass (per) model options to the generate() method:
 
 ```typescript
@@ -50,11 +44,28 @@ const userSchema = schemaManager.generate(userModel, strategy, {
 
 `jsonSchema` and `schema` works the same as sequelize-to-json-schemas.
 
-Starting from 1.0.0, associations are excluded by default.
+### Notes
 
 Association types that are not one of `HasOne`, `BelongsTo`, `HasMany`, or `BelongsToMany` are silently dropped from the generated schema without a warning.
 
 Names listed in `include`, `exclude`, `includeAssociations`, or `excludeAssociations` that do not match any model attribute or association are silently ignored.
+
+### Version 1.0.0
+
+- Associations are excluded by default.
+- Additional properties can be rejected:
+  <br>
+  ```typescript
+  const strategy = new OpenApiStrategy({ additionalProperties: false })
+  ```
+
+### Version 2.0.0
+
+The following breaking changes were introduced:
+
+- Mutually exclusive options (`include`/`exclude` and `includeAssociations`/`excludeAssociations`) now throw `TypeError` instead of plain `Error`.
+- `jsonSchema` now throws `TypeError` if it is not an object instead of a property-read error.
+- A missing through model or association target in a `BelongsToMany` association no longer produces a `$ref` entry or throws a property-read error.
 
 ## Validators
 
