@@ -119,6 +119,23 @@ describe('SchemaManager', function() {
     });
 
     // ------------------------------------------------------------------------
+    // make sure option 'readOnlyId' functions as expected
+    // ------------------------------------------------------------------------
+    describe('Ensure readOnlyId:', function () {
+        const schemaManager = new SchemaManager
+        const strategy = new OpenApiStrategy
+        const schema = schemaManager.generate(models.User, strategy, {
+            include: ['id'],
+            readOnlyId: true
+        });
+
+        it(`is used for (primaryKey, autoIncrement) column`, function () {
+            expect(schema.properties!['id']).toHaveProperty('readOnly');
+            expect(schema.properties!['id']['readOnly']).toEqual(true);
+        });
+    })
+
+    // ------------------------------------------------------------------------
     // Validation and guard-rail behavior of SchemaManager.generate()
     // ------------------------------------------------------------------------
     describe('SchemaManager validation and guard rails', function () {

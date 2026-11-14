@@ -20,6 +20,7 @@ export type ModelOptions = {
     associations?: boolean,
     includeAssociations?: string[],
     excludeAssociations?: string[],
+    readOnlyId?: boolean,
 }
 
 const _strategy = new WeakMap<SchemaManager, OpenApiStrategy>()
@@ -43,6 +44,7 @@ export default class SchemaManager {
                     associations: false,
                     includeAssociations: [],
                     excludeAssociations: [],
+                    readOnlyId: false
                 },
                 options
             )
@@ -190,8 +192,15 @@ export default class SchemaManager {
         const readOnly = this.getCustomPropertyValue('readOnly', attributeProperties)
         const writeOnly = this.getCustomPropertyValue('writeOnly', attributeProperties)
 
-        if (!(readOnly || writeOnly))
+        if (!(readOnly || writeOnly)) {
+            if (_modelOptions.get(this).readOnlyId && attributeProperties.primaryKey && attributeProperties.autoIncrement) {
+                return {
+                    readOnly: true
+                }
+            }
+
             return null
+        }
 
         if (readOnly && writeOnly) {
             throw new TypeError(

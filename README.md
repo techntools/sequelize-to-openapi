@@ -67,6 +67,16 @@ The following breaking changes were introduced:
 - `jsonSchema` now throws `TypeError` if it is not an object instead of a property-read error.
 - A missing through model or association target in a `BelongsToMany` association no longer produces a `$ref` entry instead of throwing a property-read error.
 
+## Version 2.1.0
+
+- (primaryKey, autoIncrement) column can be marked readOnly:
+  <br>
+  ```typescript
+  const userSchema = schemaManager.generate(userModel, strategy, {
+    readOnlyId: true
+  });
+  ```
+
 ## Validators
 
 Following validators are supported:
