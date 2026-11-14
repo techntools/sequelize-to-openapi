@@ -689,6 +689,7 @@ const User = (function () {
                 primaryKey: true,
                 autoIncrement: true,
                 allowNull: false,
+                comment: 'Primary key of the table'
             },
             ...attributes
         },

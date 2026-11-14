@@ -136,6 +136,23 @@ describe('SchemaManager', function() {
     })
 
     // ------------------------------------------------------------------------
+    // make sure option 'commentAsDescription' functions as expected
+    // ------------------------------------------------------------------------
+    describe('Ensure commentAsDescription:', function () {
+        const schemaManager = new SchemaManager
+        const strategy = new OpenApiStrategy
+        const schema = schemaManager.generate(models.User, strategy, {
+            include: ['id'],
+            commentAsDescription: true
+        });
+
+        it(`is used for (primaryKey, autoIncrement) column`, function () {
+            expect(schema.properties!['id']).toHaveProperty('description');
+            expect(schema.properties!['id']['description']).toEqual('Primary key of the table');
+        });
+    })
+
+    // ------------------------------------------------------------------------
     // Validation and guard-rail behavior of SchemaManager.generate()
     // ------------------------------------------------------------------------
     describe('SchemaManager validation and guard rails', function () {

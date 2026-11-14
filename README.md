@@ -77,6 +77,16 @@ The following breaking changes were introduced:
   });
   ```
 
+## Version 2.2.0
+
+- Sequelize `comment` can be used for OpenAPI `description`. But `jsonSchema.description` will be used instead if present.
+  <br>
+  ```typescript
+  const userSchema = schemaManager.generate(userModel, strategy, {
+    commentAsDescription: true
+  });
+  ```
+
 ## Validators
 
 Following validators are supported:

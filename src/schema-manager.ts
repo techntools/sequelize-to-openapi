@@ -21,6 +21,7 @@ export type ModelOptions = {
     includeAssociations?: string[],
     excludeAssociations?: string[],
     readOnlyId?: boolean,
+    commentAsDescription?: boolean
 }
 
 const _strategy = new WeakMap<SchemaManager, OpenApiStrategy>()
@@ -44,7 +45,8 @@ export default class SchemaManager {
                     associations: false,
                     includeAssociations: [],
                     excludeAssociations: [],
-                    readOnlyId: false
+                    readOnlyId: false,
+                    commentAsDescription: false
                 },
                 options
             )
@@ -231,8 +233,17 @@ export default class SchemaManager {
             attributeProperties,
         )
 
-        if (!description)
+        if (!description) {
+            if (
+                _modelOptions.get(this).commentAsDescription
+                && attributeProperties.comment
+                && checkTypeRequired(attributeName, attributeProperties.comment, 'string')
+            ) {
+                return { description: attributeProperties.comment }
+            }
+
             return null
+        }
 
         checkTypeRequired(attributeName, description, 'string')
 
