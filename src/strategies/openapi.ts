@@ -243,6 +243,18 @@ export default class OpenApiStrategy {
                     break
                 }
 
+                case 'isIn': {
+                    if (val.args) {
+                        const args = val.args.reduce((acc: (string | number)[], arg: (string | number)[]) => {
+                            return acc.concat(arg)
+                        }, [])
+                        result['enum'] = args
+                    } else {
+                        result['enum'] = val[0]
+                    }
+                    break
+                }
+
                 case 'not': {
                     if (val && val instanceof RegExp) {
                         result['not'] = { regexp: val.toString() }

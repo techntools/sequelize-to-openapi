@@ -98,6 +98,7 @@ Following validators are supported:
 | len       | minLength/maxLength         |
 | notEmpty  | minLength                   |
 | notIn     | `{ not: { enum: [] } }`<br> |
+| isIn     | `{ enum: [] }`<br> |
 
 | Sequelize | OpenAPI Format |
 | :-------- | :------------- |

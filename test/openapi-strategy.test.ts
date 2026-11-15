@@ -647,6 +647,24 @@ describe('OpenApi3Strategy', function () {
                     }
                 })
 
+                it("has value that is in", function () {
+                    expect(schema.properties!['STRING_IS_IN']).toHaveProperty('enum', ['mongoose'])
+
+                    {
+                        const validate = ajv.compile(schema.properties!['STRING_IS_IN'])
+                        const valid = validate('mongoose')
+                        expect(valid).toBe(true)
+                    }
+
+                    {
+                        const validate = ajv.compile(schema.properties!['STRING_IS_IN'])
+                        const valid = validate('lion')
+                        expect(valid).toBe(false)
+                    }
+
+                    expect(schema.properties!['STRING_IS_IN_ARGED']).toHaveProperty('enum', ['mongoose', 'lion'])
+                })
+
                 it("has value that is not", function () {
                     expect(schema.properties!['STRING_NOT'].not.regexp).toBe('/^[a-z]+$/i')
                     expect(schema.properties!['STRING_NOT_STRING'].not.regexp).toBe('/^[a-z]+$/')

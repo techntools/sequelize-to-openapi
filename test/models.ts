@@ -331,6 +331,22 @@ const User = (function () {
                 }
             },
 
+            STRING_IS_IN: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    isIn: [['mongoose']]
+                }
+            },
+
+            STRING_IS_IN_ARGED: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    isIn: { args: [['mongoose', 'lion']], msg: '' }
+                }
+            },
+
             STRING_IS_STRING: {
                 type: DataTypes.STRING,
                 allowNull: false,
