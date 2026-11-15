@@ -137,7 +137,7 @@ describe('OpenApi3Strategy', function () {
 
             it("INET maps to a union of ipv4 and ipv6 strings", function () {
                 expect(schema.properties!['INET']).toEqual({
-                    type: [
+                    oneOf: [
                         { type: 'string', format: 'ipv4' },
                         { type: 'string', format: 'ipv6' },
                     ],

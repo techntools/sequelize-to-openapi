@@ -20,7 +20,7 @@ type PropertyType = (typeof OBJECT | typeof ARRAY | typeof BOOLEAN | typeof INTE
     required?: string[]
 }
 
-type Property = (PropertyType | { type: PropertyType[], items?: PropertyType[] }) & { default?: unknown }
+type Property = (PropertyType | { type: PropertyType[], items?: PropertyType[] } | { oneOf: PropertyType[] }) & { default?: unknown }
 
 
 export default class TypeMapper {
@@ -118,10 +118,10 @@ export default class TypeMapper {
 
             case 'INET': {
                 result = {
-                    type: [
+                    oneOf: [
                         { ...STRING, format: 'ipv4' },
-                        { ...STRING, format: 'ipv6' },
-                    ],
+                        { ...STRING, format: 'ipv6' }
+                    ]
                 }
                 break
             }
