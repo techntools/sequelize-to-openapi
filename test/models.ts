@@ -371,6 +371,14 @@ const User = (function () {
                 }
             },
 
+            STRING_IS_INT: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    isInt: true
+                }
+            },
+
             STRING_IS_UUID: {
                 type: DataTypes.STRING,
                 allowNull: false,

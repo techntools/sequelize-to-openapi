@@ -1,4 +1,4 @@
-import { Association, ModelValidateOptions } from 'sequelize'
+import type { Association, ModelValidateOptions, DataType } from 'sequelize'
 
 
 export default class OpenApiStrategy {
@@ -108,7 +108,7 @@ export default class OpenApiStrategy {
     /**
      * Returns the properties to validate value.
      */
-    getPropertiesForValidate(validate: ModelValidateOptions) {
+    getPropertiesForValidate(validate: ModelValidateOptions, type?: DataType) {
         if (!validate) return
 
         const result: any = {}
@@ -135,6 +135,11 @@ export default class OpenApiStrategy {
 
                 case 'isEmail': {
                     if (val) result['format'] = 'email'
+                    break
+                }
+
+                case 'isInt': {
+                    if (type === 'STRING' && val) result['pattern'] = '^-?\\d+$'
                     break
                 }
 

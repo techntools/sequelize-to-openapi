@@ -729,6 +729,19 @@ describe('OpenApi3Strategy', function () {
                     })
                 })
 
+                describe("is integer", function () {
+                    it('with pattern', function () {
+                        expect(schema.properties!['STRING_IS_INT']).toHaveProperty('pattern')
+                    })
+
+                    it('accepts a valid integer and rejects garbage', function () {
+                        const validate = ajv.compile(schema.properties!['STRING_IS_INT'])
+
+                        expect(validate('1234')).toBe(true)
+                        expect(validate('not-int')).toBe(false)
+                    })
+                })
+
                 describe("isUUID validator", function () {
                     it('produces uuid format', function () {
                         expect(schema.properties!['STRING_IS_UUID'].format).toEqual('uuid')

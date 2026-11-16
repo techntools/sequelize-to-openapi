@@ -114,6 +114,7 @@ Following validators are supported:
 | isAlphanumeric | `^[a-zA-Z0-9]+$`                                                                            |
 | isLowercase    | `^[a-z]+$`                                                                                  |
 | isUppercase    | `^[A-Z]+$`                                                                                  |
+| isInt          | `^-?\\d+$`                                                                                  |
 | contains       | `^.*' + val + '.*$`                                                                         |
 | notContains    | `^(?!.*' + val + ').*$`<br><br>With array:<br><br>`^(?!.*(' + val.args.join('\|') + ')).*$` |
 

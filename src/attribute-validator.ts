@@ -26,7 +26,7 @@ export default class AttributeValidator {
         switch (attributeType) {
             case 'INTEGER':
             case 'STRING':
-                result = strategy.getPropertiesForValidate(properties.validate)
+                result = strategy.getPropertiesForValidate(properties.validate, properties.type['key'])
                 break
 
             case 'HSTORE': {
