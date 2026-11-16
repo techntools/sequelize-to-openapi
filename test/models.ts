@@ -275,6 +275,22 @@ const User = (function () {
                 }
             },
 
+            STRING_IS_DATE: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    isDate: true,
+                }
+            },
+
+            STRING_IS_DATE_ARGED: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                validate: {
+                    isDate: { msg: '', args: true },
+                }
+            },
+
             STRING_HAS_SUBSTRING: {
                 type: DataTypes.STRING,
                 allowNull: false,

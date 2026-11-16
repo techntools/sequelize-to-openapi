@@ -105,6 +105,7 @@ Following validators are supported:
 | isEmail   | email          |
 | isUrl     | url            |
 | isUUID    | uuid           |
+| isDate    | date-time      |
 
 | Sequelize      | OpenAPI Pattern                                                                             |
 | :------------- | :------------------------------------------------------------------------------------------ |

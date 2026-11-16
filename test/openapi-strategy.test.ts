@@ -706,6 +706,29 @@ describe('OpenApi3Strategy', function () {
                     }
                 })
 
+                describe("has date-time format", function () {
+                    it('produces date-time format', function () {
+                        expect(schema.properties!['STRING_IS_DATE'].format).toEqual('date-time')
+                        expect(schema.properties!['STRING_IS_DATE_ARGED'].format).toEqual('date-time')
+                    })
+
+                    it('accepts a valid date-time and rejects garbage', function () {
+                        {
+                            const validate = ajv.compile(schema.properties!['STRING_IS_DATE'])
+
+                            expect(validate('2026-11-15T16:45:47.529Z')).toBe(true)
+                            expect(validate('not-a-date')).toBe(false)
+                        }
+
+                        {
+                            const validate = ajv.compile(schema.properties!['STRING_IS_DATE_ARGED'])
+
+                            expect(validate('2026-11-15T16:45:47.529Z')).toBe(true)
+                            expect(validate('not-a-date')).toBe(false)
+                        }
+                    })
+                })
+
                 describe("isUUID validator", function () {
                     it('produces uuid format', function () {
                         expect(schema.properties!['STRING_IS_UUID'].format).toEqual('uuid')

@@ -164,6 +164,11 @@ export default class OpenApiStrategy {
                     break
                 }
 
+                case 'isDate': {
+                    if (val) result['format'] = 'date-time'
+                    break
+                }
+
                 case 'isAlpha': {
                     if (val) result['pattern'] = '^[a-zA-Z]+$'
                     break
