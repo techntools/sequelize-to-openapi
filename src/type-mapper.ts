@@ -364,8 +364,13 @@ export default class TypeMapper {
          * Sequelize allows default value null as is actually recognied by
          * databases. Thats why the comparison is with undefined
          */
-        if (properties.defaultValue !== undefined)
-            result.default = properties.defaultValue
+        if (properties.defaultValue !== undefined) {
+            if (properties.defaultValue === null && !properties.allowNull) {
+                console.warn('\x1b[33m%s\x1b[0m', '\nWarning: sequelize-to-openapi no longer allows null as default if allowNull is false.\n')
+            } else {
+                result.default = properties.defaultValue
+            }
+        }
 
         return result
     }

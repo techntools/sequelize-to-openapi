@@ -87,6 +87,10 @@ The following breaking changes were introduced:
   });
   ```
 
+## Version 2.5.1
+
+- Fix: If allowNull is false and defaultValue is null, OpenAPI `default` will not be set to null anymore. Both conflict each other and a warning will be shown instead.
+
 ## Validators
 
 Following validators are supported:

@@ -39,6 +39,23 @@ describe('TypeMapper fallback and guard rails', function () {
         })
     })
 
+    it('warns when map skips setting null default if allowNull is false', function () {
+        const consoleWarn = console.warn.bind(console)
+        console.warn = () => {}
+
+        const strategy = new OpenApiStrategy
+
+        const model = sequelize.define(
+            'skip_null_default',
+            { value: { type: DataTypes.STRING, allowNull: false, defaultValue: null } },
+        )
+
+        const schema = schemaManager.generate(model, strategy)
+        expect(schema.properties!['value']).toStrictEqual({ type: 'string' })
+
+        console.warn = consoleWarn
+    })
+
     it('throws when convertTypePropertyToAllowNull returns a non-object', function () {
         const strategy = new OpenApiStrategy
         ;(strategy as any).convertTypePropertyToAllowNull = () => 'not-an-object'
