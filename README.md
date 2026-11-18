@@ -67,16 +67,6 @@ The following breaking changes were introduced:
 - `jsonSchema` now throws `TypeError` if it is not an object instead of a property-read error.
 - A missing through model or association target in a `BelongsToMany` association no longer produces a `$ref` entry instead of throwing a property-read error.
 
-## Version 2.1.0
-
-- (primaryKey, autoIncrement) column can be marked readOnly:
-  <br>
-  ```typescript
-  const userSchema = schemaManager.generate(userModel, strategy, {
-    readOnlyId: true
-  });
-  ```
-
 ## Version 2.2.0
 
 - Sequelize `comment` can be used for OpenAPI `description`. But `jsonSchema.description` will be used instead if present.
@@ -90,6 +80,16 @@ The following breaking changes were introduced:
 ## Version 2.5.1
 
 - Fix: If allowNull is false and defaultValue is null, OpenAPI `default` will not be set to null anymore. Both conflict each other and a warning will be shown instead.
+
+## Version 2.5.2
+
+- primaryKey or autoIncrement column can be marked readOnly:
+  <br>
+  ```typescript
+  const userSchema = schemaManager.generate(userModel, strategy, {
+    readOnlyId: true
+  });
+  ```
 
 ## Validators
 

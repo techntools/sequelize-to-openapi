@@ -195,7 +195,7 @@ export default class SchemaManager {
         const writeOnly = this.getCustomPropertyValue('writeOnly', attributeProperties)
 
         if (!(readOnly || writeOnly)) {
-            if (_modelOptions.get(this).readOnlyId && attributeProperties.primaryKey && attributeProperties.autoIncrement) {
+            if (_modelOptions.get(this).readOnlyId && (attributeProperties.primaryKey || attributeProperties.autoIncrement)) {
                 return {
                     readOnly: true
                 }

@@ -125,13 +125,18 @@ describe('SchemaManager', function() {
         const schemaManager = new SchemaManager
         const strategy = new OpenApiStrategy
         const schema = schemaManager.generate(models.User, strategy, {
-            include: ['id'],
+            include: ['id', 'autoIncremented'],
             readOnlyId: true
         });
 
-        it(`is used for (primaryKey, autoIncrement) column`, function () {
+        it(`is used for primaryKey column`, function () {
             expect(schema.properties!['id']).toHaveProperty('readOnly');
             expect(schema.properties!['id']['readOnly']).toEqual(true);
+        });
+
+        it(`is used for autoIncrement column`, function () {
+            expect(schema.properties!['autoIncremented']).toHaveProperty('readOnly');
+            expect(schema.properties!['autoIncremented']['readOnly']).toEqual(true);
         });
     })
 

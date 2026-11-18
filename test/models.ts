@@ -727,9 +727,12 @@ const User = (function () {
             id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
-                autoIncrement: true,
                 allowNull: false,
                 comment: 'Primary key of the table'
+            },
+            autoIncremented: {
+                type: DataTypes.INTEGER,
+                autoIncrement: true,
             },
             ...attributes
         },
